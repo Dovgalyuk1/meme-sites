@@ -4,3 +4,4 @@ __pycache__/
 *.zip
 .vercel/
 shots/
+claude/refs/*/mirror/
