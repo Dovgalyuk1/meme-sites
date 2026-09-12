@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(bash tools/vercel.sh:*)", "Bash(tools/vercel.sh:*)",
+      "Bash(node tools/check.js:*)", "Bash(python3 tools/cutout.py:*)",
+      "Bash(python3 -m http.server:*)",
+      "Bash(pip3 install:*)",
+      "Bash(curl:*)",
+      "Bash(mkdir:*)", "Bash(cp:*)", "Bash(ls:*)", "Bash(cat:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c 'import numpy,PIL' 2>/dev/null || pip3 install --quiet numpy pillow >/dev/null 2>&1 &",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

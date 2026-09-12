@@ -9,6 +9,8 @@
 #   tools/vercel.sh new    <имя>            создать проект на папку <имя> и задеплоить
 #   tools/vercel.sh status <имя>            состояние последнего деплоя
 #   tools/vercel.sh domain <имя> <домен>    привязать домен и показать DNS-записи
+#   tools/vercel.sh list                    все проекты и их папки
+#   tools/vercel.sh rm     <имя>            удалить проект (папку в репозитории не трогает)
 #
 # Правки существующего сайта деплоятся сами на git push — вызывать ничего не надо.
 set -euo pipefail
@@ -108,11 +110,29 @@ if d.get('error'): print('  ОШИБКА:', d['error'].get('message'))"
 print(json.dumps(d, ensure_ascii=False, indent=2))"
 }
 
+cmd_list() {
+  api GET "/v9/projects?limit=100" | jqp "
+for x in d.get('projects', []):
+    print('%-22s root=%-22s repo=%s' % (x['name'], x.get('rootDirectory') or '-', (x.get('link') or {}).get('repo') or '-'))"
+}
+
+cmd_rm() {
+  local n=$1 code
+  code=$(curl -s -o /dev/null -w '%{http_code}' -X DELETE "${AUTH[@]}" "$API/v9/projects/$n")
+  case "$code" in
+    204) echo "проект $n удалён (папка $n в репозитории осталась)" ;;
+    404) die "проекта $n в Vercel нет" ;;
+    *)   die "не удалил проект $n, HTTP $code" ;;
+  esac
+}
+
 case "${1:-}" in
   free)   shift; cmd_free   "$@" ;;
   new)    shift; cmd_new    "$@" ;;
   deploy) shift; cmd_deploy "$@" ;;
   status) shift; cmd_status "$@" ;;
   domain) shift; cmd_domain "$@" ;;
-  *) sed -n '2,12p' "$0"; exit 1 ;;
+  list)   shift; cmd_list   "$@" ;;
+  rm)     shift; cmd_rm     "$@" ;;
+  *) sed -n '2,14p' "$0"; exit 1 ;;
 esac
