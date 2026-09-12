@@ -10,13 +10,52 @@ if (!arg) { console.error('usage: node tools/ref.js <url|файл> [имя]'); p
 const ROOT = path.resolve(__dirname, '..');
 const SNAP = path.join(ROOT, 'claude', 'референсы', 'snapshots');
 
+/* страница, собранная скриптами, по curl приходит пустой оболочкой:
+   в этом случае снимаем её отрендеренной в браузере */
+function render(url) {
+  const code = `
+    const {chromium}=require('/opt/node22/lib/node_modules/playwright');
+    (async()=>{
+      const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
+      const p=await b.newPage({viewport:{width:1440,height:1000}});
+      await p.goto(process.argv[1],{waitUntil:'networkidle',timeout:60000});
+      await p.waitForTimeout(1200);
+      process.stdout.write(await p.content());
+      await b.close();
+    })().catch(e=>{ console.error(e.message); process.exit(1); });`;
+  const r = cp.spawnSync('node', ['-e', code, url], { maxBuffer: 64 << 20, timeout: 120000 });
+  if (r.status !== 0) {
+    console.error('# браузерный снимок не получился: ' + String(r.stderr).split('\n')[0].trim());
+    return '';
+  }
+  return r.stdout.toString('utf8');
+}
+/* пустая оболочка = в body почти нет разметки И почти нет текста */
+function looksEmpty(h) {
+  const body = h.slice(h.indexOf('<body'))
+    .replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ');
+  const nodes = (body.match(/<(div|section|main|img|video|canvas|p|h1|h2|a|button)\b/g) || []).length;
+  const text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return nodes < 5 && text.length < 200;
+}
+
 let html, name, src;
 if (/^https?:\/\//.test(arg)) {
-  name = process.argv[3] || new URL(arg).hostname.replace(/^www\./, '');
+  name = (process.argv[3] && process.argv[3][0] !== '-') ? process.argv[3]
+       : new URL(arg).hostname.replace(/^www\./, '');
   src = arg;
-  const out = cp.spawnSync('curl', ['-sS', '-L', '--max-time', '60', arg], { maxBuffer: 64 << 20 });
-  if (out.status !== 0) { console.error(String(out.stderr)); process.exit(1); }
-  html = out.stdout.toString('utf8');
+  const forced = process.argv.includes('--render');
+  if (!forced) {
+    const out = cp.spawnSync('curl', ['-sS', '-L', '--max-time', '60', arg], { maxBuffer: 64 << 20 });
+    if (out.status !== 0) { console.error(String(out.stderr)); process.exit(1); }
+    html = out.stdout.toString('utf8');
+  }
+  if (forced || looksEmpty(html || '')) {
+    if (!forced) console.error('# страница пришла пустой оболочкой, пробую браузер');
+    const r = render(arg);
+    if (r) html = r; else if (!html) process.exit(1);
+    src = arg + '  (рендер)';
+  }
   if (!html.trim()) { console.error('пустой ответ от ' + arg); process.exit(1); }
   fs.mkdirSync(SNAP, { recursive: true });
   fs.writeFileSync(path.join(SNAP, name + '.html'), html);
