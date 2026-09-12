@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  /* settings - everything is changed here, in one place */
+  window.CONTRACT = "";
+  window.TWITTER  = "https://x.com/SulkyOnpf";
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sulky</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="It rained. I stayed. That is the whole arrangement." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --night:#06050c; --void:#0d0a1a; --slab:#191430;
+  --stone:#7a7cc0; --ember:#f07a1a; --cream:#ffe0a8;
+  --ink:#e9e3f7; --dim:#8478a6;
+  --display:"Big Shoulders Display",system-ui,sans-serif;
+  --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark; scroll-behavior:auto}
+body{
+  margin:0; background:var(--night); color:var(--ink);
+  font-family:var(--mono); overflow-x:clip; -webkit-font-smoothing:antialiased;
+}
+img{display:block; max-width:100%}
+a{color:inherit; text-decoration:none}
+
+/* ---------- fixed layers ---------- */
+.scene-back{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(50% 42% at 50% 32%, #2a1f4e, #0000 72%),
+    radial-gradient(40% 34% at 18% 78%, #3a2160, #0000 74%),
+    linear-gradient(#0a0714, #06050c 62%);
+}
+.ghost{
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+  z-index:0; pointer-events:none; font-family:var(--display); font-weight:800;
+  font-size:clamp(9rem,30vw,26rem); line-height:.82; letter-spacing:-.02em;
+  color:#ffffff07; white-space:nowrap;
+}
+.scene-front{position:fixed; inset:0; z-index:2; pointer-events:none}
+.scene-front canvas{display:block; width:100%; height:100%}
+.rain-css{
+  position:fixed; inset:0; z-index:3; pointer-events:none; opacity:0;
+  background:repeating-linear-gradient(96deg,#ffffff17 0 1px,#0000 1px 8px);
+}
+.vignette{
+  position:fixed; inset:0; z-index:4; pointer-events:none;
+  background:radial-gradient(72% 60% at 50% 46%, #0000 42%, #06050cc9 100%);
+}
+.fallback{
+  position:fixed; inset:0; z-index:2; display:none; place-items:center;
+}
+.fallback img{width:min(52vw,420px); filter:drop-shadow(0 24px 44px #000)}
+body.no-webgl .fallback{display:grid}
+body.no-webgl .scene-front{display:none}
+
+/* ---------- beats ---------- */
+#beats{position:relative; z-index:5}
+.beat{height:200svh; min-height:900px; position:relative}
+.beat .hold{
+  position:sticky; top:0; height:100svh; display:grid; align-content:center;
+  padding:0 clamp(18px,6vw,90px); pointer-events:none;
+}
+.beat h2, .beat h1{
+  margin:0; font-family:var(--display); font-weight:800; line-height:.86;
+  letter-spacing:-.02em; color:#f6f0ff;
+  text-shadow:0 6px 34px #000000c4, 0 0 60px #2a1f4e;
+}
+.beat h1{
+  font-size:clamp(4.6rem,17vw,15rem);
+  background:linear-gradient(#fff9ee 12%, #ffd7a0 40%, #c98a3f 58%, #fff4e0 78%);
+  -webkit-background-clip:text; background-clip:text; color:#0000;
+  filter:drop-shadow(0 10px 26px #000000b8) drop-shadow(0 0 40px #f07a1a3d);
+}
+.beat h2{font-size:clamp(2.1rem,7.5vw,6rem)}
+.beat p{
+  margin:16px 0 0; max-width:34ch; font-size:clamp(13px,1.5vw,16px); line-height:1.7;
+  color:#c4b9dd; text-shadow:0 3px 16px #000;
+}
+.b-right .hold{justify-items:end; text-align:right}
+.b-left .hold{justify-items:start}
+.b-center .hold{justify-items:center; text-align:center}
+.beat[data-beat="0"] .hold{align-content:start; padding-top:9svh}
+.b-center p{margin-left:auto; margin-right:auto}
+
+/* engraved contract slab */
+.slab{
+  pointer-events:auto; margin-top:34px; width:min(560px,84vw);
+  padding:22px clamp(16px,2.4vw,28px); border-radius:6px; cursor:pointer;
+  background-image:url("assets/stone.webp");
+  background-size:340px; background-position:center;
+  box-shadow:0 24px 50px #000000a8, inset 0 0 0 1px #ffffff1a, inset 0 0 60px #00000073;
+  text-align:left;
+}
+.slab small{
+  display:block; font-size:10px; letter-spacing:.34em; text-transform:uppercase;
+  color:#0c0817; text-shadow:0 1px 0 #ffffff30; margin-bottom:8px;
+}
+.slab b{
+  display:block; font-weight:700; font-size:clamp(11px,1.3vw,15px); word-break:break-all;
+  line-height:1.4; color:#0a0714;
+  text-shadow:0 1px 0 #ffffff3d, 0 -1px 1px #00000073;
+}
+.slab:hover b{color:#1c1030}
+
+/* ---------- vault ---------- */
+.vault{
+  position:relative; z-index:6; padding:16vh clamp(18px,6vw,90px) 12vh;
+  background:linear-gradient(#06050c00, #06050ce8 16%, #06050c);
+}
+.vault header{margin-bottom:clamp(24px,4vw,48px)}
+.vault h2{
+  margin:0; font-family:var(--display); font-weight:800;
+  font-size:clamp(2.4rem,8vw,6.4rem); line-height:.86; letter-spacing:-.02em; color:#f6f0ff;
+}
+.vault header span{
+  display:block; margin-top:12px; font-size:11px; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--dim);
+}
+.vault-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:clamp(10px,1.6vw,18px)}
+.vault-grid button{
+  padding:0; border:0; background:none; cursor:pointer; border-radius:10px; overflow:hidden;
+  box-shadow:0 0 0 1px #ffffff1f, 0 18px 34px #00000082;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1), box-shadow .2s;
+}
+.vault-grid button:hover{transform:translateY(-6px); box-shadow:0 0 0 1px #f07a1a70, 0 24px 44px #000000a3}
+.vault-grid img{width:100%; aspect-ratio:1; object-fit:cover; display:block}
+
+/* ---------- footer ---------- */
+footer{
+  position:relative; z-index:6; padding:0 clamp(18px,6vw,90px) 10vh;
+  display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  background:#06050c;
+}
+footer .row{display:flex; gap:12px}
+footer a.icn{
+  display:grid; place-items:center; width:48px; height:48px; border-radius:14px;
+  background:#140f26; box-shadow:inset 0 0 0 1px #ffffff17;
+  transition:background .16s, transform .16s;
+}
+footer a.icn:hover{background:#2a1f4e; transform:translateY(-3px)}
+footer a.icn img{width:19px; height:19px; filter:brightness(0) invert(1); opacity:.86}
+footer .quiet{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#4d4468}
+
+/* ---------- lightbox ---------- */
+.lb{
+  position:fixed; inset:0; z-index:90; display:none; place-items:center;
+  background:#03020ae8; backdrop-filter:blur(9px); padding:5vh 5vw;
+}
+.lb.is-open{display:grid}
+.lb img{
+  max-width:min(88vw,720px); max-height:82svh; width:auto; border-radius:8px;
+  box-shadow:0 0 0 1px #ffffff26, 0 40px 90px #000;
+}
+
+/* ---------- scroll hint ---------- */
+.hint{
+  position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:7;
+  font-size:10px; letter-spacing:.36em; text-transform:uppercase; color:#5b5180;
+  transition:opacity .5s;
+}
+.hint.gone{opacity:0}
+
+@media (max-width:820px){
+  .beat{height:170svh; min-height:720px}
+  .b-right .hold{justify-items:start; text-align:left}
+  .beat p{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important; animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<div class="scene-back"></div>
+<div class="ghost">SULKY</div>
+<div class="scene-front"><canvas id="gl"></canvas></div>
+<div class="rain-css"></div>
+<div class="vignette"></div>
+<div class="fallback"><img src="assets/cat.webp" alt="Sulky, a small sad orange kitten" /></div>
+
+<main id="beats">
+  <section class="beat b-center" data-beat="0">
+    <div class="hold">
+      <h1>SULKY</h1>
+      <p>It rained. I stayed. That is the whole arrangement.</p>
+    </div>
+  </section>
+
+  <section class="beat b-left" data-beat="1">
+    <div class="hold">
+      <h2>THE STAIRS</h2>
+      <p>They go up. I have been told this many times by people on their way up them.</p>
+    </div>
+  </section>
+
+  <section class="beat b-right" data-beat="2">
+    <div class="hold">
+      <h2>STEP FOUR</h2>
+      <p>I got this far in one go. Then I sat down to think about it and here we are.</p>
+    </div>
+  </section>
+
+  <section class="beat b-left" data-beat="3">
+    <div class="hold">
+      <h2>CUT IN STONE</h2>
+      <div class="slab ca">
+        <small>Contract</small>
+        <b>soon</b>
+      </div>
+    </div>
+  </section>
+
+  <section class="beat b-center" data-beat="4">
+    <div class="hold">
+      <h2>STILL RAINING</h2>
+      <p>Come back whenever. I will not have moved.</p>
+    </div>
+  </section>
+</main>
+
+<section class="vault">
+  <header>
+    <h2>WHERE HE GOES</h2>
+    <span>five times he left the step</span>
+  </header>
+  <div class="vault-grid" id="vaultGrid"></div>
+</section>
+
+<footer>
+  <div class="row">
+    <a class="icn" href="https://www.ponsfamily.com/launchpad" title="Buy"><img src="assets/ic-pons.png" alt="Buy" /></a>
+    <a class="icn" href="https://x.com" title="X"><img src="assets/ic-x.png" alt="X" /></a>
+    <a class="icn" href="https://dexscreener.com/robinhood/" title="Chart"><img src="assets/ic-dex.png" alt="Chart" /></a>
+  </div>
+  <div class="quiet">step four, still there</div>
+</footer>
+
+<div class="lb" id="lb"><img id="lbImg" src="" alt="Sulky out in the world" /></div>
+<div class="hint" id="hint">scroll</div>
+
+<script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+<script>
+(function(){
+  if(!window.Lenis || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var lenis = new Lenis({smoothWheel:true});
+  function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+})();
+
+var MEMES = ['assets/meme-01.webp','assets/meme-02.webp','assets/meme-03.webp','assets/meme-04.webp','assets/meme-05.webp'];
+var LB = document.getElementById('lb'), LBI = document.getElementById('lbImg');
+(function(){
+  var grid = document.getElementById('vaultGrid');
+  MEMES.forEach(function(src){
+    var b = document.createElement('button'); b.type = 'button';
+    var i = new Image(); i.src = src; i.alt = 'Sulky out in the world'; i.loading = 'lazy';
+    b.appendChild(i);
+    b.addEventListener('click', function(){ LBI.src = src; LB.classList.add('is-open'); });
+    grid.appendChild(b);
+  });
+})();
+LB.addEventListener('click', function(){ LB.classList.remove('is-open'); });
+addEventListener('keydown', function(e){ if(e.key === 'Escape') LB.classList.remove('is-open'); });
+
+(function(){
+  var hint = document.getElementById('hint');
+  addEventListener('scroll', function(){
+    hint.classList.toggle('gone', scrollY > innerHeight * 0.4);
+  }, {passive:true});
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+const canvas = document.getElementById('gl');
+const beats = document.getElementById('beats');
+
+/* camera key frames - one scalar is driven by scroll, everything else follows */
+const BEATS = [
+  { cam:[ 0.3,  2.6,  11.6], look:[ 0.85, 2.9,  1.2], fov:32 },
+  { cam:[-5.2, -1.4,   8.6], look:[-0.4,  4.6, -1.2], fov:40 },
+  { cam:[ 2.3,  2.35,  3.5], look:[ 0.1,  1.85, 0.0], fov:26 },
+  { cam:[ 4.6,  0.5,   8.2], look:[ 0.0,  2.2, -0.8], fov:36 },
+  { cam:[ 0.4, -2.5,  15.5], look:[ 0.0,  3.4, -1.0], fov:44 },
+];
+
+try{
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true, powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.35));
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0a0716, 0.036);
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 160);
+
+  scene.add(new THREE.HemisphereLight(0x9a8ce0, 0x090612, 1.05));
+  const key = new THREE.DirectionalLight(0xd9d2ff, 2.0); key.position.set(-5, 9, 6); scene.add(key);
+  const warm = new THREE.PointLight(0xf07a1a, 16, 14, 1.8); warm.position.set(0.9, 2.4, 2.2); scene.add(warm);
+  const pool = new THREE.PointLight(0x8f7dff, 22, 26, 1.5); pool.position.set(-1.5, 1.1, 3.5); scene.add(pool);
+
+  const loader = new THREE.TextureLoader();
+  const stoneTex = loader.load('assets/stone.webp');
+  stoneTex.colorSpace = THREE.SRGBColorSpace;
+  stoneTex.wrapS = stoneTex.wrapT = THREE.RepeatWrapping;
+  stoneTex.repeat.set(1.6, 1.6);
+
+  const stoneMat = new THREE.MeshStandardMaterial({map:stoneTex, color:0x9d9ad6, roughness:.42, metalness:.12});
+  const stepGeo = new THREE.BoxGeometry(2.5, 0.44, 2.0);
+
+  /* the staircase climbing away into the dark */
+  const stairs = new THREE.Group();
+  const STEPS = 16;
+  for(let i = 0; i < STEPS; i++){
+    const s = new THREE.Mesh(stepGeo, stoneMat);
+    s.position.set(-i * 0.92, i * 0.86, -i * 0.62);
+    s.rotation.y = -0.06 * i;
+    stairs.add(s);
+  }
+  /* the step he actually sits on, out on its own */
+  const home = new THREE.Mesh(stepGeo, stoneMat);
+  home.position.set(0.85, 0.9, 1.5);
+  home.rotation.y = 0.16;
+  stairs.add(home);
+  scene.add(stairs);
+
+  /* cheap mirror: a flipped ghost copy under the water line */
+  const echo = stairs.clone(true);
+  echo.scale.y = -1;
+  echo.position.y = -0.1;
+  echo.traverse(o => {
+    if(o.isMesh){
+      o.material = new THREE.MeshBasicMaterial({map:stoneTex, color:0x3b3670, transparent:true, opacity:.3});
+    }
+  });
+  scene.add(echo);
+
+  /* the flooded floor */
+  const water = new THREE.Mesh(
+    new THREE.PlaneGeometry(140, 140, 1, 1),
+    new THREE.MeshStandardMaterial({color:0x241c4a, roughness:.06, metalness:.9, transparent:true, opacity:.9})
+  );
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = -0.05;
+  scene.add(water);
+
+  /* the kitten, a billboard cut straight out of the avatar */
+  const catTex = loader.load('assets/cat.webp');
+  catTex.colorSpace = THREE.SRGBColorSpace;
+  const cat = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.9, 1.9),
+    new THREE.MeshBasicMaterial({map:catTex, transparent:true, alphaTest:.04, toneMapped:false})
+  );
+  cat.position.set(0.85, 2.05, 1.62);
+  scene.add(cat);
+
+  const catEcho = cat.clone();
+  catEcho.material = new THREE.MeshBasicMaterial({map:catTex, transparent:true, alphaTest:.04, opacity:.22, toneMapped:false});
+  catEcho.scale.y = -1;
+  catEcho.position.y = -2.15;
+  scene.add(catEcho);
+
+  /* rain */
+  const DROPS = 2600;
+  const pos = new Float32Array(DROPS * 6);
+  const speed = new Float32Array(DROPS);
+  for(let i = 0; i < DROPS; i++){
+    const x = (Math.random() - .5) * 52;
+    const y = Math.random() * 34;
+    const z = (Math.random() - .5) * 46;
+    const len = 0.5 + Math.random() * 0.9;
+    pos[i*6+0] = x; pos[i*6+1] = y;       pos[i*6+2] = z;
+    pos[i*6+3] = x; pos[i*6+4] = y - len; pos[i*6+5] = z;
+    speed[i] = 9 + Math.random() * 12;
+  }
+  const rainGeo = new THREE.BufferGeometry();
+  rainGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const rain = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({color:0xe4dfff, transparent:true, opacity:.72}));
+  rain.frustumCulled = false;
+  scene.add(rain);
+
+  function fit(){
+    const w = innerWidth, h = innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  fit();
+  addEventListener('resize', fit);
+
+  /* scroll drives one scalar; camera, target and fov are read off it */
+  let progress = 0;
+  function readScroll(){
+    const r = beats.getBoundingClientRect();
+    const total = r.height - innerHeight;
+    const p = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0;
+    progress = p * (BEATS.length - 1);
+  }
+  readScroll();
+  addEventListener('scroll', readScroll, {passive:true});
+  addEventListener('resize', readScroll);
+
+  const mobile = matchMedia('(max-width: 820px)').matches;
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const camPos = new THREE.Vector3(), lookAt = new THREE.Vector3();
+  let smooth = 0, prev = 0;
+
+  renderer.setAnimationLoop(t => {
+    const dt = Math.min((t - prev) / 1000, 0.06); prev = t;
+    if(document.hidden) return;
+
+    smooth = lerp(smooth, progress, 0.09);
+    const i = Math.min(BEATS.length - 2, Math.floor(smooth));
+    const f = Math.min(1, Math.max(0, smooth - i));
+    const a = BEATS[i], b = BEATS[i + 1];
+
+    const zoomOut = mobile ? 1.2 : 1;
+    camPos.set(
+      lerp(a.cam[0], b.cam[0], f) * (mobile ? 0.6 : 1),
+      lerp(a.cam[1], b.cam[1], f),
+      lerp(a.cam[2], b.cam[2], f) * zoomOut
+    );
+    lookAt.set(lerp(a.look[0], b.look[0], f), lerp(a.look[1], b.look[1], f), lerp(a.look[2], b.look[2], f));
+    camera.position.copy(camPos);
+    camera.lookAt(lookAt);
+    camera.fov = lerp(a.fov, b.fov, f);
+    camera.updateProjectionMatrix();
+
+    /* he always faces whoever is looking */
+    cat.quaternion.copy(camera.quaternion);
+    catEcho.quaternion.copy(camera.quaternion);
+    catEcho.scale.set(cat.scale.x, -cat.scale.y, cat.scale.z);
+
+    const p = rainGeo.attributes.position.array;
+    for(let k = 0; k < DROPS; k++){
+      const d = speed[k] * dt;
+      p[k*6+1] -= d; p[k*6+4] -= d;
+      if(p[k*6+4] < -1){
+        const len = p[k*6+1] - p[k*6+4];
+        p[k*6+1] = 32 + Math.random() * 4;
+        p[k*6+4] = p[k*6+1] - len;
+      }
+    }
+    rainGeo.attributes.position.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  });
+}catch(err){
+  document.body.classList.add('no-webgl');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  /* SETTINGS - everything is changed here, at the top, in ONE place */
+  window.CONTRACT = "";   /* contract address. empty = "soon" */
+  window.TWITTER  = "https://x.com/BattlegroundCat";   /* link to X. empty = plain x.com link */
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Battleground Cat</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="they issued me a spoon and forgot about me" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --sand:#e0c69a; --sand-deep:#c8a874; --olive:#6d7135; --olive-deep:#3b3d1c;
+  --night:#1d1c10; --panel:#2b2a17; --line:#7e8146;
+  --sky-g:#2f7a4f; --sky-y:#f2c53d; --hot:#e0762a; --bone:#f6f0dd;
+  --px:"Pixelify Sans", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%; overflow:hidden}
+body{
+  background:var(--night); color:var(--bone); font-family:var(--mono);
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block}
+button{font-family:inherit; cursor:pointer}
+
+/* ---------- loader ---------- */
+#boot{
+  position:fixed; inset:0; z-index:90; background:var(--night);
+  display:grid; place-items:center; gap:0;
+  transition:opacity .55s ease, visibility .55s ease;
+}
+#boot.is-gone{opacity:0; visibility:hidden; pointer-events:none}
+.boot-in{display:flex; flex-direction:column; align-items:center; gap:22px; width:min(88vw,420px)}
+.boot-in img{width:min(46vw,220px); height:auto; image-rendering:auto}
+.boot-bar{display:flex; gap:4px; width:100%}
+.boot-bar i{flex:1; height:16px; background:#3a3820; border:1px solid #56552e}
+.boot-bar i.on{background:var(--sky-y); border-color:#f6dd8a}
+.boot-row{display:flex; justify-content:space-between; width:100%;
+  font-family:var(--px); font-size:15px; letter-spacing:.08em; color:#cfc79a}
+#skip{
+  position:fixed; right:20px; bottom:18px; background:none; border:0;
+  font-family:var(--mono); font-size:10px; letter-spacing:.24em; color:#8d8a63;
+}
+#skip:hover{color:var(--bone)}
+
+/* ---------- fixed control strip ---------- */
+.strip{
+  position:fixed; left:18px; top:16px; z-index:40; display:flex; gap:5px; flex-wrap:wrap;
+}
+.key{
+  font-family:var(--px); font-size:14px; letter-spacing:.04em; color:#241f0d;
+  background:linear-gradient(#e9dfba,#c3b884); border:1px solid #17150a;
+  box-shadow:inset 1px 1px 0 #fdf7e0, inset -1px -1px 0 #8e854f;
+  padding:6px 12px 5px; text-decoration:none; display:inline-block;
+}
+.key:hover{background:linear-gradient(#fff8dd,#d6cb95)}
+.key:active, .key.is-down{background:#b3a874; box-shadow:inset 1px 1px 0 #8e854f, inset -1px -1px 0 #fdf7e0}
+.stage-no{
+  position:fixed; right:18px; top:16px; z-index:40; font-family:var(--px);
+  font-size:16px; letter-spacing:.1em; color:#cfc79a;
+}
+.stage-no b{color:var(--sky-y)}
+
+/* ---------- screens ---------- */
+.deck{position:fixed; inset:0; z-index:10}
+.screen{
+  position:absolute; inset:0; padding:74px 76px 30px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;
+  opacity:0; visibility:hidden; transform:translateY(14px);
+  transition:opacity .22s ease, visibility .22s ease, transform .3s ease;
+  overflow-y:auto;
+}
+.screen.is-on{opacity:1; visibility:visible; transform:none}
+#s1{justify-content:flex-start; padding-top:78px}
+.tag{
+  font-family:var(--px); font-size:15px; letter-spacing:.18em; color:#e8e1b0;
+  display:flex; gap:28px; flex-wrap:wrap; justify-content:center;
+  text-shadow:0 2px 8px rgba(20,15,4,.9);
+}
+.slug{font-family:var(--px); font-size:clamp(16px,2.1vw,22px); letter-spacing:.1em; color:var(--sky-y)}
+
+/* the name, built up in layers */
+.wordmark{text-align:center; line-height:.86; font-family:var(--px); font-weight:700}
+.wordmark span{
+  display:block; letter-spacing:.02em;
+  background:linear-gradient(#6a6d24 3%, #e6e79c 28%, #fffdf0 48%, #f2c53d 64%, #85701c 96%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 3px 0 #14130a) drop-shadow(0 7px 0 #0c0b06) drop-shadow(0 14px 18px rgba(0,0,0,.6));
+}
+.wordmark .l1{font-size:clamp(40px,8.2vw,112px)}
+.wordmark .l2{font-size:clamp(40px,8.2vw,112px); margin-top:-.06em}
+
+/* a frame that reads as a screen, holding the art */
+.plate{
+  position:relative; width:min(100%, 780px); aspect-ratio:16/9; overflow:hidden;
+  background:#0f0e08; border:1px solid #16150b;
+  box-shadow:inset 0 0 0 5px #7e8146, inset 0 0 0 6px #0f0e08,
+             0 18px 34px rgba(0,0,0,.5);
+}
+.plate img.pbg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.plate img.pfg{position:absolute; bottom:-4%; left:50%; transform:translateX(-50%);
+  height:106%; width:auto; filter:drop-shadow(0 16px 16px rgba(30,20,5,.5))}
+.plate:after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.12) 3px 4px),
+             radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 62%, rgba(0,0,0,.34) 100%);
+}
+.plate.square{aspect-ratio:1; width:min(100%,430px)}
+
+.row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
+
+/* ---------- screen 2: notes + rules ---------- */
+.two{display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); gap:26px;
+  width:min(100%,1080px); align-items:start}
+.notes{background:var(--panel); border:1px solid #16150b;
+  box-shadow:inset 1px 1px 0 #5c5a32, inset -1px -1px 0 #100f08}
+.notes h2{
+  font-family:var(--px); font-weight:600; font-size:16px; letter-spacing:.14em;
+  background:linear-gradient(#7e8146,#4c4e26); color:#f6f0dd;
+  padding:7px 12px; display:flex; justify-content:space-between; align-items:center;
+}
+.notes h2 em{font-style:normal; font-size:12px; color:#d8d2a4; letter-spacing:.1em}
+.notes p{font-size:12.5px; line-height:1.62; color:#ded8b6; padding:0 16px}
+.notes p:first-of-type{padding-top:16px}
+.notes p:last-of-type{padding-bottom:18px}
+.rules{display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-top:14px}
+.rule{background:#211f11; border:1px solid #4a4826; padding:12px 13px; position:relative}
+.rule b{font-family:var(--px); font-size:15px; letter-spacing:.1em; color:var(--sky-y); display:block}
+.rule small{display:block; margin-top:5px; font-size:11px; line-height:1.5; color:#c6c096}
+.rule i{position:absolute; right:9px; top:8px; font-style:normal; font-size:10px; color:#6d6a45}
+
+/* ---------- screen 3: the dig ---------- */
+.dig{display:flex; flex-direction:column; align-items:center; gap:16px; width:min(100%,900px)}
+.digwrap{position:relative; width:min(100%,430px); aspect-ratio:1;
+  border:1px solid #16150b; box-shadow:inset 0 0 0 5px #57552c, inset 0 0 0 6px #0f0e08,
+  0 18px 34px rgba(0,0,0,.55); overflow:hidden; background:#0f0e08}
+.digwrap video, .digwrap img.still{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.digwrap:after{content:""; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.16) 3px 4px)}
+.meter{width:min(100%,430px)}
+.meter-top{display:flex; justify-content:space-between; font-family:var(--px);
+  font-size:15px; letter-spacing:.1em; color:#cfc79a; margin-bottom:5px}
+.meter-top b{color:var(--sky-y)}
+.trough{height:18px; background:#26240f; border:1px solid #56552e; padding:2px; overflow:hidden}
+.fill{height:100%; width:0%;
+  background-image:repeating-linear-gradient(to right, var(--sky-y) 0 9px, #26240f 9px 12px);
+  transition:width .1s linear}
+#digbtn{
+  font-family:var(--px); font-size:20px; letter-spacing:.12em; color:#241f0d;
+  background:linear-gradient(#f0e4b4,#c8b673); border:2px solid #17150a;
+  padding:13px 34px 11px; box-shadow:0 6px 0 #17150a; user-select:none; touch-action:none;
+}
+#digbtn.is-down{transform:translateY(5px); box-shadow:0 1px 0 #17150a}
+#digbtn[disabled]{opacity:.45; cursor:default; box-shadow:0 6px 0 #17150a; transform:none}
+
+/* ---------- screen 4: the field ---------- */
+.reel{display:flex; align-items:center; justify-content:center; gap:14px;
+  width:100%; perspective:1400px; min-height:min(52vh,420px)}
+.reel img{
+  width:min(34vw,300px); aspect-ratio:1; object-fit:cover; cursor:pointer; order:0;
+  border:1px solid #16150b; box-shadow:0 16px 30px rgba(0,0,0,.55);
+  transition:transform .45s cubic-bezier(.3,1,.4,1), filter .45s, opacity .45s;
+}
+.reel img.side{order:-1; transform:rotateY(28deg) scale(.74); filter:brightness(.5) saturate(.7); opacity:.85}
+.reel img.side.r{order:1; transform:rotateY(-28deg) scale(.74)}
+.reel img.far{transform:scale(.5); opacity:0; pointer-events:none; position:absolute}
+.pager{font-family:var(--px); font-size:16px; letter-spacing:.14em; color:#cfc79a;
+  display:flex; align-items:center; gap:18px}
+.pager button{background:none; border:0; color:#cfc79a; font-family:var(--px); font-size:20px}
+.pager button:hover{color:var(--sky-y)}
+
+/* ---------- edge arrows ---------- */
+.arrow{
+  position:fixed; top:50%; transform:translateY(-50%); z-index:35;
+  background:none; border:0; color:#a9a375; font-family:var(--px); font-size:54px;
+  line-height:1; padding:10px 14px; transition:color .2s, transform .2s;
+}
+.arrow:hover{color:var(--sky-y)}
+.arrow.l{left:8px} .arrow.r{right:8px}
+.arrow.l:hover{transform:translateY(-50%) translateX(-4px)}
+.arrow.r:hover{transform:translateY(-50%) translateX(4px)}
+.arrow[disabled]{opacity:.2}
+
+/* ---------- memes window ---------- */
+.win{
+  position:fixed; z-index:60; left:50%; top:50%; transform:translate(-50%,-50%) scale(.96);
+  width:min(92vw,720px); background:var(--panel); border:1px solid #16150b;
+  box-shadow:inset 1px 1px 0 #5c5a32, inset -1px -1px 0 #100f08, 10px 12px 0 rgba(0,0,0,.5);
+  opacity:0; visibility:hidden; transition:opacity .26s, visibility .26s, transform .26s;
+}
+.win.is-on{opacity:1; visibility:visible; transform:translate(-50%,-50%) scale(1)}
+.winbar{display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(#7e8146,#4c4e26); padding:7px 9px 7px 13px;
+  font-family:var(--px); font-size:15px; letter-spacing:.12em; color:#f6f0dd}
+.winbar button{width:22px; height:19px; background:#cfc79a; color:#17150a;
+  border:1px solid #17150a; font-family:var(--px); font-size:13px; line-height:1}
+.wingrid{display:grid; grid-template-columns:repeat(4,1fr); gap:9px; padding:13px}
+.wingrid img{width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer;
+  border:1px solid #16150b; transition:transform .18s}
+.wingrid img:hover{transform:scale(1.05)}
+
+.lightbox{position:fixed; inset:0; z-index:70; background:rgba(10,9,4,.9);
+  display:grid; place-items:center; padding:5vh 5vw; cursor:zoom-out;
+  opacity:0; visibility:hidden; transition:opacity .25s, visibility .25s}
+.lightbox.is-on{opacity:1; visibility:visible}
+.lightbox img{max-width:min(88vw,720px); max-height:86vh; border:4px solid #57552c}
+
+/* ---------- page texture ---------- */
+.dither{position:fixed; inset:0; z-index:45; pointer-events:none; opacity:.4;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(0,0,0,0) 56%, rgba(14,12,4,.62) 100%),
+    repeating-linear-gradient(rgba(255,240,190,.032) 0 1px, rgba(0,0,0,0) 1px 3px);
+}
+/* the level itself is the page background */
+.world{position:fixed; inset:0; z-index:-2; overflow:hidden; background:#241f0d}
+.world img{width:100%; height:100%; object-fit:cover; object-position:50% 62%;
+  filter:blur(5px) brightness(.62) saturate(.9); transform:scale(1.06)}
+.scrim{
+  position:fixed; inset:0; z-index:-1; pointer-events:none;
+  transition:background .35s ease;
+  background:linear-gradient(rgba(24,20,6,.26), rgba(24,20,6,.04) 32%, rgba(24,20,6,.42) 80%, rgba(20,17,5,.72));
+}
+/* screens that carry panels need the level pushed further back */
+body.deep .scrim{background:linear-gradient(rgba(18,15,4,.84), rgba(18,15,4,.8))}
+
+/* the contract sits on the first screen, nobody has to look for it */
+.ca-plate{
+  display:flex; align-items:center; gap:12px; cursor:pointer;
+  background:rgba(28,24,8,.72); border:1px solid #7e8146; padding:9px 16px;
+  font-size:11.5px; letter-spacing:.06em; color:#f1ead0; backdrop-filter:blur(3px);
+}
+.ca-plate span{font-family:var(--px); font-size:14px; letter-spacing:.14em; color:var(--sky-y)}
+.ca-plate b{font-weight:600; word-break:break-all}
+
+@media (max-width:900px){
+  .screen{padding:96px 44px 26px; gap:16px}
+  .two{grid-template-columns:1fr; gap:16px}
+  .rules{grid-template-columns:1fr}
+  .reel img.side{display:none}
+  .reel img{width:min(72vw,340px)}
+  .arrow{font-size:40px; padding:8px}
+  .strip{left:12px; top:12px; gap:4px}
+  .key{font-size:12px; padding:5px 9px 4px}
+  .stage-no{right:12px; top:14px; font-size:13px}
+  .wingrid{grid-template-columns:repeat(2,1fr)}
+  .notes p{font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){ .screen{transition:none} }
+</style>
+</head>
+<body>
+
+<div class="world"><img src="assets/bg-field.webp" alt="A ruined desert street at dusk" /></div>
+<div class="scrim"></div>
+
+<div class="strip">
+  <a class="key" href="https://www.ponsfamily.com/launchpad">BUY</a>
+  <a class="key" href="https://x.com">X</a>
+  <a class="key" href="https://dexscreener.com/robinhood/">DEX</a>
+  <button class="key ca" id="copyca">COPY CA</button>
+  <button class="key" id="open-memes">MEMES</button>
+</div>
+<p class="stage-no"><b id="sno">01</b> / 04</p>
+
+<main class="deck">
+
+  <!-- 01 - briefing -->
+  <section class="screen is-on" id="s1">
+    <p class="tag"><span>ONE SOLDIER</span><span>ONE SPOON</span><span>NO ORDERS</span></p>
+    <h1 class="wordmark"><span class="l1">BATTLEGROUND</span><span class="l2">CAT</span></h1>
+    <p class="slug">THEY ISSUED ME A SPOON AND FORGOT ABOUT ME</p>
+    <div class="plate">
+      <img class="pbg" src="assets/bg-field.webp" alt="A ruined desert street at dusk" />
+      <img class="pfg" src="assets/hero.webp" alt="Battleground Cat holding his spoon" />
+    </div>
+    <p class="ca ca-plate"><span>CONTRACT</span> <b class="ca-val">soon</b></p>
+  </section>
+
+  <!-- 02 - field notes -->
+  <section class="screen" id="s2">
+    <div class="two">
+      <div class="plate square">
+        <img class="pbg" src="assets/meme-01.webp" alt="Eating soup out of his own helmet" />
+      </div>
+      <div>
+        <div class="notes">
+          <h2>FIELD NOTES <em>DAY 41</em></h2>
+          <p>they handed out rifles down the line. i got to the front of the queue and they were out.</p>
+          <p>so i dug. it took four days and it is the best hole out here.</p>
+          <p>nobody has come to check on me. the soup is warm. i am fine.</p>
+        </div>
+        <div class="rules">
+          <div class="rule"><i>...</i><b>DIG FIRST</b><small>cover beats courage, every time.</small></div>
+          <div class="rule"><i>...</i><b>KEEP IT WARM</b><small>a cold ration is a lost day.</small></div>
+          <div class="rule"><i>...</i><b>ANSWER TO NOBODY</b><small>nobody has asked in six weeks.</small></div>
+          <div class="rule"><i>...</i><b>MIND THE SPOON</b><small>it is the shovel and the dinner.</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 - the dig -->
+  <section class="screen" id="s3">
+    <div class="dig">
+      <p class="slug">HOLD THE KEY. HE ONLY DIGS WHILE YOU HOLD IT.</p>
+      <div class="digwrap">
+        <video id="digvid" src="assets/dig.mp4" poster="assets/dig-poster.jpg"
+               muted loop playsinline preload="metadata"></video>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>DEPTH</span><span><b id="depth">0.00</b> m</span></div>
+        <div class="trough"><div class="fill" id="fill"></div></div>
+      </div>
+      <button id="digbtn">HOLD TO DIG</button>
+    </div>
+  </section>
+
+  <!-- 04 - the field -->
+  <section class="screen" id="s4">
+    <p class="slug">TAKE THEM. HE IS NOT USING THEM.</p>
+    <div class="reel" id="reel">
+      <img src="assets/meme-05.webp" alt="Eating out of a ration tin bigger than he is" />
+      <img src="assets/meme-04.webp" alt="Sitting on the turret of a knocked-out tank" />
+      <img src="assets/meme-03.webp" alt="Asleep in the trench hugging the spoon" />
+      <img src="assets/meme-01.webp" alt="Eating soup out of his own helmet" />
+      <img src="assets/meme-02.webp" alt="Saluting with the spoon on a dune" />
+      <img src="assets/video-frame.webp" alt="Digging the trench with a spoon" />
+    </div>
+    <div class="pager">
+      <button id="prev-m">&lt;</button><span><b id="mno">01</b> / 06</span><button id="next-m">&gt;</button>
+    </div>
+  </section>
+
+</main>
+
+<button class="arrow l" id="go-prev" aria-label="Previous screen">&lsaquo;</button>
+<button class="arrow r" id="go-next" aria-label="Next screen">&rsaquo;</button>
+
+<div class="win" id="memes">
+  <div class="winbar">SPOON.DIR <button id="close-memes" aria-label="Close">x</button></div>
+  <div class="wingrid">
+    <img src="assets/meme-05.webp" alt="Eating out of a ration tin bigger than he is" />
+    <img src="assets/meme-04.webp" alt="Sitting on the turret of a knocked-out tank" />
+    <img src="assets/meme-03.webp" alt="Asleep in the trench hugging the spoon" />
+    <img src="assets/meme-01.webp" alt="Eating soup out of his own helmet" />
+    <img src="assets/meme-02.webp" alt="Saluting with the spoon on a dune" />
+    <img src="assets/video-frame.webp" alt="Digging the trench" />
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox"><img src="" alt="" /></div>
+
+<div class="dither"></div>
+
+<div id="boot">
+  <div class="boot-in">
+    <img src="assets/hero.webp" alt="Battleground Cat waiting" />
+    <div class="boot-bar" id="bootbar"></div>
+    <div class="boot-row"><span>NOW LOADING</span><span id="bootpc">0%</span></div>
+  </div>
+  <button id="skip">SKIP</button>
+</div>
+
+<script>
+(function(){
+  /* ---- loader: counts the real assets ---- */
+  var boot = document.getElementById('boot');
+  var bar = document.getElementById('bootbar');
+  var pc = document.getElementById('bootpc');
+  var CELLS = 16, cells = [];
+  for(var i=0;i<CELLS;i++){ var c=document.createElement('i'); bar.appendChild(c); cells.push(c); }
+
+  var srcs = ['assets/bg-field.webp','assets/hero.webp','assets/meme-01.webp',
+              'assets/meme-02.webp','assets/video-frame.webp'];
+  var done = 0, total = srcs.length;
+  function tick(){
+    var p = Math.round(done/total*100);
+    pc.textContent = p + '%';
+    for(var i=0;i<CELLS;i++){ cells[i].classList.toggle('on', i < Math.round(p/100*CELLS)); }
+    if(done >= total) setTimeout(hideBoot, 420);
+  }
+  srcs.forEach(function(s){
+    var im = new Image();
+    im.onload = im.onerror = function(){ done++; tick(); };
+    im.src = s;
+  });
+  tick();
+  function hideBoot(){ boot.classList.add('is-gone'); }
+  document.getElementById('skip').addEventListener('click', hideBoot);
+
+  /* ---- screens ---- */
+  var screens = [].slice.call(document.querySelectorAll('.screen'));
+  var cur = 0;
+  var sno = document.getElementById('sno');
+  var prevB = document.getElementById('go-prev'), nextB = document.getElementById('go-next');
+  function show(n){
+    n = Math.max(0, Math.min(screens.length-1, n));
+    screens[cur].classList.remove('is-on');
+    cur = n;
+    screens[cur].classList.add('is-on');
+    sno.textContent = ('0'+(cur+1)).slice(-2);
+    document.body.classList.toggle('deep', cur !== 0);
+    prevB.disabled = cur === 0;
+    nextB.disabled = cur === screens.length-1;
+    if(cur !== 2) stopDig();
+  }
+  prevB.addEventListener('click', function(){ show(cur-1); });
+  nextB.addEventListener('click', function(){ show(cur+1); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight') show(cur+1);
+    if(e.key === 'ArrowLeft') show(cur-1);
+    if(e.key === 'Escape'){ lb.classList.remove('is-on'); win.classList.remove('is-on'); }
+  });
+  show(0);
+
+  /* ---- the dig: he only moves while the key is held ---- */
+  var TARGET = 3.00;
+  var depth = parseFloat(localStorage.getItem('bgcat-depth') || '0') || 0;
+  var vid = document.getElementById('digvid');
+  var btn = document.getElementById('digbtn');
+  var depthEl = document.getElementById('depth');
+  var fill = document.getElementById('fill');
+  var timer = 0, last = 0, digging = false;
+  var RATE = 0.55;   /* metres per second */
+
+  function paint(){
+    depthEl.textContent = depth.toFixed(2);
+    fill.style.width = Math.min(100, depth/TARGET*100) + '%';
+    if(depth >= TARGET){
+      btn.disabled = true;
+      btn.textContent = 'DEEP ENOUGH';
+    }
+  }
+  function step(){
+    if(!digging) return;
+    var now = (window.performance && performance.now) ? performance.now() : Date.now();
+    var dt = Math.min(0.25, (now - last)/1000);
+    last = now;
+    depth = Math.min(TARGET, depth + dt*RATE);
+    paint();
+    if(depth >= TARGET) stopDig();
+  }
+  function startDig(e){
+    if(e && e.preventDefault) e.preventDefault();
+    if(digging || depth >= TARGET) return;
+    digging = true;
+    last = (window.performance && performance.now) ? performance.now() : Date.now();
+    btn.classList.add('is-down');
+    var p = vid.play(); if(p && p.catch) p.catch(function(){});
+    timer = setInterval(step, 50);
+  }
+  function stopDig(){
+    if(!digging) return;
+    digging = false;
+    btn.classList.remove('is-down');
+    vid.pause();
+    clearInterval(timer);
+    localStorage.setItem('bgcat-depth', depth.toFixed(2));
+  }
+  btn.addEventListener('pointerdown', startDig);
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+    btn.addEventListener(ev, stopDig);
+  });
+  window.addEventListener('blur', stopDig);
+  paint();
+
+  /* ---- the field: one big frame, two shoulders ---- */
+  var reel = document.getElementById('reel');
+  var shots = [].slice.call(reel.querySelectorAll('img'));
+  var mno = document.getElementById('mno');
+  var m = 0;
+  function paintReel(){
+    shots.forEach(function(im, i){
+      im.className = '';
+      if(i === m) return;
+      if(i === (m-1+shots.length)%shots.length) im.className = 'side';
+      else if(i === (m+1)%shots.length) im.className = 'side r';
+      else im.className = 'far';
+    });
+    mno.textContent = ('0'+(m+1)).slice(-2);
+  }
+  document.getElementById('prev-m').addEventListener('click', function(){ m = (m-1+shots.length)%shots.length; paintReel(); });
+  document.getElementById('next-m').addEventListener('click', function(){ m = (m+1)%shots.length; paintReel(); });
+  shots.forEach(function(im, i){
+    im.addEventListener('click', function(){
+      if(i !== m){ m = i; paintReel(); return; }
+      lb.querySelector('img').src = im.src; lb.querySelector('img').alt = im.alt;
+      lb.classList.add('is-on');
+    });
+  });
+  paintReel();
+
+  /* ---- window + lightbox ---- */
+  var win = document.getElementById('memes');
+  var lb = document.getElementById('lightbox');
+  document.getElementById('open-memes').addEventListener('click', function(){ win.classList.add('is-on'); });
+  document.getElementById('close-memes').addEventListener('click', function(){ win.classList.remove('is-on'); });
+  document.querySelectorAll('.wingrid img').forEach(function(im){
+    im.addEventListener('click', function(){
+      lb.querySelector('img').src = im.src; lb.querySelector('img').alt = im.alt;
+      lb.classList.add('is-on');
+    });
+  });
+  lb.addEventListener('click', function(){ lb.classList.remove('is-on'); });
+
+  /* ---- copy buttons keep working before a contract exists ---- */
+  [].slice.call(document.querySelectorAll('#copyca')).forEach(function(b){
+    b.addEventListener('click', function(){
+      var ca = (window.CONTRACT || '').trim();
+      if(!ca) return;
+      if(navigator.clipboard) navigator.clipboard.writeText(ca);
+      var old = b.textContent; b.textContent = 'COPIED';
+      setTimeout(function(){ b.textContent = old; }, 1200);
+    });
+  });
+})();
+</script>
+</body>
+</html>

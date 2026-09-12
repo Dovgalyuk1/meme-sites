@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  window.CONTRACT = "";
+  window.TWITTER  = "https://x.com/Kapywtf";
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kapy</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="i have been on this island since the cartridge shipped." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --sky:#1436c8; --sea:#17c4c0; --sand:#f0c464; --grass:#33c22a; --rock:#c8763a;
+  --dusk:#ff7a1e; --night:#0a1140; --cream:#fff6e2; --ink:#0a1a3c; --gold:#ffdc3d;
+  --face:#f6efd8; --hi:#ffffff; --lo:#9a8f6e;
+  --disp:'Bungee',cursive; --mono:'Space Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--night);color:var(--cream);font-family:var(--mono);overflow:hidden}
+img{display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+
+/* chunky game keys */
+.key{background:var(--face);color:var(--ink);border:3px solid var(--ink);
+  box-shadow:inset 2px 2px 0 var(--hi),inset -2px -2px 0 var(--lo),3px 3px 0 rgba(10,17,64,.55);
+  font-family:var(--disp);font-size:11px;letter-spacing:.03em;padding:9px 12px;
+  display:inline-flex;align-items:center;gap:7px;line-height:1}
+.key:active{box-shadow:inset -2px -2px 0 var(--hi),inset 2px 2px 0 var(--lo);translate:2px 2px}
+.key img{width:13px;height:13px}
+.key.go{background:#5ef07a}
+.key.hot{background:var(--gold)}
+
+/* monitor frame */
+.mon{position:relative;background:#08122e;border:5px solid var(--ink);
+  box-shadow:inset 0 0 0 4px #5a6ea8, 8px 8px 0 rgba(10,17,64,.55);overflow:hidden}
+.mon::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(rgba(0,0,0,.17) 0 1px,transparent 1px 3px)}
+
+/* ---------- loader ---------- */
+#load{position:fixed;inset:0;z-index:120;background:var(--night);display:grid;justify-items:center;
+  align-content:center;gap:20px;transition:opacity .55s}
+#load.gone{opacity:0;pointer-events:none}
+#load img{width:150px;image-rendering:auto;filter:drop-shadow(0 10px 0 rgba(0,0,0,.5))}
+#load .bar{display:flex;gap:4px}
+#load .bar i{width:13px;height:17px;background:#1e2a63;border:2px solid var(--ink)}
+#load .bar i.on{background:var(--gold)}
+#load .row{display:flex;gap:26px;font-size:12px;letter-spacing:.24em;color:#9fb0e8}
+#load .skip{position:fixed;right:18px;bottom:16px;font-size:10px;letter-spacing:.24em;color:#7d8cc4}
+
+/* ---------- shell ---------- */
+#shell{position:fixed;inset:0;opacity:0;transition:opacity .6s}
+#shell.on{opacity:1}
+.hud{position:fixed;left:14px;top:14px;z-index:40;display:flex;gap:7px;flex-wrap:wrap;max-width:min(560px,72vw)}
+.brand{position:fixed;right:14px;top:14px;z-index:40;display:flex;align-items:center;gap:9px}
+.brand img{width:34px;height:34px;border:3px solid var(--ink)}
+.brand span{font-family:var(--disp);font-size:13px;color:var(--gold)}
+
+.arrow{position:fixed;top:50%;translate:0 -50%;z-index:40;width:clamp(38px,4vw,54px);height:clamp(64px,7vw,92px);
+  display:grid;place-items:center;font-size:clamp(26px,3vw,38px);line-height:1;
+  background:rgba(10,17,64,.5);border:3px solid rgba(255,246,226,.55);color:var(--cream);
+  transition:background .18s,transform .18s}
+.arrow:hover{background:rgba(255,220,61,.85);color:var(--ink)}
+.arrow.l{left:10px} .arrow.r{right:10px}
+.dots{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:40;display:flex;gap:8px;align-items:center}
+.dots button{width:12px;height:12px;background:rgba(255,246,226,.35);border:2px solid var(--ink)}
+.dots button.on{background:var(--gold)}
+.dots span{font-size:11px;letter-spacing:.2em;color:rgba(255,246,226,.7);margin-left:8px}
+
+/* ---------- screens ---------- */
+.screens{position:absolute;inset:0}
+.scr{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s,transform .45s;
+  transform:translateX(6%);display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(58px,8.5vh,96px) clamp(58px,7vw,110px) clamp(46px,7vh,74px);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.scr.on{opacity:1;visibility:visible;transform:none}
+.scr .plate{position:absolute;inset:0;z-index:-2;background-size:cover;background-position:center;
+  filter:saturate(.95) brightness(.72)}
+.scr .dim{position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(6,12,40,.55),rgba(6,12,40,.2) 40%,rgba(6,12,40,.8))}
+.kicker{position:relative;z-index:3;display:flex;gap:clamp(16px,3vw,44px);font-size:11px;letter-spacing:.26em;color:var(--gold);margin-bottom:.9em}
+.mark{font-family:var(--disp);line-height:.86;letter-spacing:-.01em;font-size:clamp(44px,9.6vw,128px)}
+.mark span{display:inline-block;color:var(--gold);-webkit-text-stroke:clamp(3px,.55vw,8px) var(--ink);
+  paint-order:stroke fill;text-shadow:0 clamp(4px,.7vw,10px) 0 var(--ink)}
+.mark span:nth-child(2){color:#ff9b2f;transform:rotate(3deg)}
+.mark span:nth-child(3){color:#5ef07a;transform:rotate(-2deg)}
+.mark span:nth-child(4){color:#57d8ff;transform:rotate(5deg)}
+.mark span:nth-child(1){transform:rotate(-4deg)}
+.slog{font-size:clamp(12px,1.5vw,17px);letter-spacing:.16em;margin:.9em 0 1em;color:#e7f0ff;
+  text-shadow:0 2px 10px rgba(0,0,0,.8)}
+h2.head{font-family:var(--disp);font-size:clamp(17px,2.6vw,34px);color:var(--gold);
+  -webkit-text-stroke:clamp(2px,.28vw,4px) var(--ink);paint-order:stroke fill;margin-bottom:.2em}
+.sub{font-size:clamp(11px,1.3vw,15px);letter-spacing:.2em;color:#cfe0ff;margin-bottom:1.1em}
+
+/* screen 1 */
+#s1 .stagerow{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(16px,2.4vw,34px);align-items:center}
+#s1 .mon{aspect-ratio:16/9;width:100%}
+#s1 .mon .chv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
+#s1 .mon .chv.on{opacity:1}
+#s1 .mon .chbtn{position:absolute;right:9px;bottom:9px;z-index:4;font-size:10px;padding:7px 10px}
+#s1 .tag{position:absolute;left:10px;bottom:9px;z-index:3;font-size:11px;letter-spacing:.2em;
+  color:var(--gold);text-shadow:1px 1px 0 #000}
+#s1 .keys{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#s1 .palm{position:absolute;left:-7%;bottom:-8%;width:19%;z-index:0;pointer-events:none;
+  filter:brightness(.6) saturate(1.1);animation:sway 7s ease-in-out infinite alternate}
+@keyframes sway{to{transform:rotate(2.2deg)}}
+.cloud{position:absolute;z-index:-1;opacity:.85;pointer-events:none}
+
+/* screen 2 */
+#s2 .cols{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(16px,2.4vw,32px)}
+#s2 .diorama{position:relative;height:min(46vh,52vw);aspect-ratio:4/5;width:auto;margin-inline:auto}
+#s2 .diorama .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#s2 .diorama .capy{position:absolute;left:24%;bottom:6%;width:42%;z-index:3}
+#s2 .diorama .rock{position:absolute;right:2%;top:30%;width:40%;z-index:2;animation:roll 4.6s linear infinite}
+@keyframes roll{0%{transform:translate(46%,-46%) scale(.62) rotate(0);opacity:0}
+  12%{opacity:1}
+  100%{transform:translate(-150%,42%) scale(1.05) rotate(620deg);opacity:1}}
+#s2 .cap{margin-top:8px;font-size:11px;letter-spacing:.18em;color:#b9c9f2}
+.lorewin{background:rgba(8,18,46,.88);border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(10,17,64,.6)}
+.lorewin header{display:flex;align-items:center;background:var(--gold);color:var(--ink);padding:7px 10px;
+  font-family:var(--disp);font-size:11px;border-bottom:4px solid var(--ink)}
+.lorewin header em{margin-left:auto;font-style:normal;font-size:10px}
+.lorewin .in{padding:12px 14px;display:grid;gap:7px;font-size:clamp(11px,1.05vw,14px);line-height:1.45;color:#e3ecff}
+.rules{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.rule{position:relative;background:rgba(8,18,46,.8);border:3px solid var(--ink);padding:9px 11px}
+.rule b{display:block;font-family:var(--disp);font-size:11px;color:var(--gold);margin-bottom:5px}
+.rule span{font-size:clamp(10px,.95vw,12px);line-height:1.4;color:#c9d8ff}
+.rule i{position:absolute;right:9px;top:7px;font-style:normal;color:#5f74b8;letter-spacing:2px}
+
+/* screen 3 - coverflow of real 3D-angled cards */
+#s3 .cf{position:relative;flex:1;min-height:0;perspective:1400px;perspective-origin:50% 46%}
+#s3 .cf .card{position:absolute;left:50%;top:50%;width:min(46vh,31vw);aspect-ratio:1;margin:0;
+  translate:-50% -50%;transition:transform .5s cubic-bezier(.2,.8,.3,1),opacity .5s,filter .5s;
+  border:5px solid var(--ink);box-shadow:0 18px 34px rgba(0,0,0,.6);background:#08122e;cursor:pointer}
+#s3 .cf .card img{width:100%;height:100%;object-fit:cover}
+#s3 .cf .card::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(rgba(0,0,0,.14) 0 1px,transparent 1px 3px)}
+#s3 .pag{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;
+  font-family:var(--disp);font-size:13px;color:var(--gold)}
+#s3 .pag button{padding:6px 12px}
+
+/* screen 4 */
+#s4 .panelrow{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(16px,2.4vw,32px);align-items:start}
+.panel{background:rgba(8,18,46,.88);border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(10,17,64,.6)}
+.panel header{display:flex;align-items:center;background:#1c2f6e;color:var(--cream);padding:8px 11px;
+  font-family:var(--disp);font-size:11px;border-bottom:4px solid var(--ink)}
+.panel header em{margin-left:auto;font-style:normal;font-size:10px;color:#5ef07a;letter-spacing:.16em}
+.panel .in{padding:14px}
+.signwrap{position:relative;width:min(100%,235px);margin-inline:auto}
+.signwrap>img{width:100%}
+.signwrap .ca{position:absolute;left:15%;top:19%;width:70%;height:36%;display:flex;flex-direction:column;
+  justify-content:center;gap:.25em;transform:rotate(-.6deg);cursor:pointer}
+.signwrap .ca i{font-style:normal;font-family:var(--disp);font-size:clamp(8px,.85vw,12px);color:#3a1f08;letter-spacing:.08em;
+     text-shadow:0 1px 0 rgba(255,236,190,.55)}
+.signwrap .ca b{font-weight:700;font-size:clamp(11px,1.25vw,17px);color:#180c04;word-break:break-all;line-height:1.2;
+     text-shadow:0 1px 0 rgba(255,236,190,.55)}
+.signwrap .ca em{font-style:normal;font-size:clamp(8px,.78vw,11px);color:#5c3714}
+#s4 .keys{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#s4 .raftwrap{position:relative;margin-top:12px;height:min(25vh,29vw);aspect-ratio:16/10;width:auto;margin-inline:auto}
+#s4 .raftwrap .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#s4 .raftwrap .raft{position:absolute;left:31%;bottom:10%;width:40%;z-index:2;animation:bob 4.4s ease-in-out infinite alternate}
+#s4 .raftwrap .raft .tube{width:100%}
+#s4 .raftwrap .raft .sit{position:absolute;left:26%;bottom:26%;width:50%}
+@keyframes bob{to{transform:translateY(-9px) rotate(1.6deg)}}
+.tail{font-size:11px;letter-spacing:.18em;color:#8fa4d8;margin-top:12px}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:300;display:none;background:rgba(4,8,28,.94)}
+.lb.on{display:block}
+.lb .frame{position:absolute;inset:clamp(56px,8vh,78px) clamp(58px,7vw,94px) clamp(60px,10vh,86px);
+  display:flex;align-items:center;justify-content:center}
+.lb .frame img{width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 18px 36px rgba(0,0,0,.75))}
+.lb .cap{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:13px;letter-spacing:.14em;color:#cfe0ff}
+.lb .x{top:16px;right:18px}
+.lb .p{left:16px;top:50%;translate:0 -50%}
+.lb .n{right:16px;top:50%;translate:0 -50%}
+.lb .key{position:absolute}
+
+@media (max-width:900px){
+  .scr{padding:96px 14px 76px}
+  .key{font-size:9px;padding:7px 9px}
+  .hud{gap:5px}
+  #s1 .stagerow, #s2 .cols, #s4 .panelrow{grid-template-columns:1fr}
+  #s2 .diorama{aspect-ratio:16/10}
+  .rules{grid-template-columns:1fr}
+  .arrow{width:34px;height:56px}
+  .hud{max-width:calc(100vw - 28px)}
+  #s3 .cf .card{width:min(60vw,42vh)}
+  .lb .frame{inset:52px 10px 84px}
+  .lb .p{left:20%;top:auto;bottom:14px;translate:0 0}
+  .lb .n{right:20%;top:auto;bottom:14px;translate:0 0}
+  .lb .cap{bottom:64px}
+}
+</style>
+</head>
+<body>
+
+<div id="load">
+  <img src="assets/cut-stand.webp" alt="Kapy waiting" />
+  <div class="bar" id="bar"></div>
+  <div class="row"><span>NOW LOADING</span><span id="pct">0%</span></div>
+  <button class="skip" id="skip">SKIP</button>
+</div>
+
+<div id="shell">
+  <div class="screens">
+
+    <!-- ============ 01 TITLE ============ -->
+    <section class="scr on" id="s1">
+      <div class="plate" style="background-image:url(assets/s1-bg.webp)"></div>
+      <div class="dim"></div>
+      <img class="cloud" src="assets/p-cloud.webp" alt="" style="left:4%;top:9%;width:16%" />
+      <img class="cloud" src="assets/p-cloud.webp" alt="" style="right:8%;top:5%;width:19%" />
+      <img class="palm" src="assets/p-palm.webp" alt="" />
+
+      <div class="kicker"><span>WORLD 1</span><span>NO EXIT FOUND</span><span>1 PLAYER</span></div>
+      <div class="stagerow">
+        <div>
+          <h1 class="mark"><span>K</span><span>A</span><span>P</span><span>Y</span></h1>
+          <div class="slog">HE HAS BEEN ON THIS ISLAND SINCE THE CARTRIDGE SHIPPED.</div>
+          <div class="keys">
+            <a class="key go" href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />BUY</a>
+            <a class="key" href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+            <a class="key" href="https://dexscreener.com/robinhood/"><img src="assets/ic-dex.png" alt="" />DEX</a>
+            <button class="key hot" data-go="2">THE FOLDER</button>
+          </div>
+        </div>
+        <div class="mon">
+          <video id="ch1v" class="chv on" src="assets/loop.mp4" poster="assets/poster.jpg" autoplay loop muted playsinline preload="metadata"></video>
+          <video id="ch2v" class="chv" src="assets/loop2.mp4" poster="assets/poster2.jpg" loop muted playsinline preload="none"></video>
+          <div class="tag" id="montag">CH 01 &#183; LIVE FROM THE BEACH</div>
+          <button class="key hot chbtn" id="chbtn">CH +</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 WHO ============ -->
+    <section class="scr" id="s2">
+      <div class="plate" style="background-image:url(assets/s2-bg.webp)"></div>
+      <div class="dim"></div>
+
+      <h2 class="head">&#9654; WHO IS ON THIS ISLAND</h2>
+      <div class="sub">NOTHING HERE HAS EVER HIT HIM</div>
+
+      <div class="cols">
+        <div>
+          <div class="diorama mon">
+            <img class="bg" src="assets/s2-bg.webp" alt="canyon between two sandstone mesas" />
+            <img class="rock" src="assets/p-boulder.webp" alt="a boulder rolling through the canyon" />
+            <img class="capy" src="assets/cut-stand.webp" alt="Kapy standing in the canyon" />
+          </div>
+          <div class="cap">CANYON &#183; ROLLING HAZARD &#183; UNBOTHERED</div>
+        </div>
+
+        <div>
+          <div class="lorewin">
+            <header>THE LORE <em>READ IT</em></header>
+            <div class="in">
+              <p>i have been on this island since the cartridge shipped. nobody ever came back for me and that turned out fine.</p>
+              <p>something rolls down the canyon about twice an hour. it has never hit me. i stopped checking why.</p>
+              <p>the water in the spring is thirty nine degrees. i am not getting out. you can leave a message with the rocks.</p>
+              <p>the save point is right over there. i have never used it once.</p>
+            </div>
+          </div>
+          <div class="rules">
+            <div class="rule"><i>...</i><b>RULE 01</b><span>stay in the level. the level is fine.</span></div>
+            <div class="rule"><i>...</i><b>RULE 02</b><span>do not look at the boulder. it loses interest.</span></div>
+            <div class="rule"><i>...</i><b>RULE 03</b><span>if the water is warm you are already home.</span></div>
+            <div class="rule"><i>...</i><b>RULE 04</b><span>never save. saving is for people who leave.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 FOLDER ============ -->
+    <section class="scr" id="s3">
+      <div class="plate" style="background-image:url(assets/s4-bg.webp)"></div>
+      <div class="dim"></div>
+
+      <h2 class="head">&#9654; THE FOLDER</h2>
+      <div class="sub">STEAL THEM. POST THEM.</div>
+
+      <div class="cf" id="cf">
+        <figure class="card" data-i="0"><img src="assets/m1.webp" alt="Kapy watching a wall of security monitors" /></figure>
+        <figure class="card" data-i="1"><img src="assets/m3.webp" alt="Kapy riding a green dragon above the clouds" /></figure>
+        <figure class="card" data-i="2"><img src="assets/m5.webp" alt="Kapy holding an oversized soda cup" /></figure>
+        <figure class="card" data-i="3"><img src="assets/m2.webp" alt="Kapy alone in an empty cinema" /></figure>
+        <figure class="card" data-i="4"><img src="assets/m4.webp" alt="Kapy walking away from an explosion" /></figure>
+        <figure class="card" data-i="5"><img src="assets/m6.webp" alt="Kapy reading a newspaper on the toilet" /></figure>
+        <figure class="card" data-i="6"><img src="assets/ava.webp" alt="Kapy standing in the island level" /></figure>
+      </div>
+      <div class="pag">
+        <button class="key" id="cfp">&#9664;</button>
+        <span id="cfnum">01 / 07</span>
+        <button class="key" id="cfn">&#9654;</button>
+      </div>
+    </section>
+
+    <!-- ============ 04 NUMBERS ============ -->
+    <section class="scr" id="s4">
+      <div class="plate" style="background-image:url(assets/s3-bg.webp)"></div>
+      <div class="dim"></div>
+
+      <h2 class="head">&#9654; THE NUMBERS</h2>
+      <div class="sub">WATCH IT CLIMB</div>
+
+      <div class="panelrow">
+        <div>
+          <div class="panel">
+            <header>KAPY / SOL <em id="stat">WAITING</em></header>
+            <div class="in" id="chartbox">
+              <div style="height:min(23vh,28vw);display:grid;place-items:center;background:#050c26;
+                          border:3px solid var(--ink);color:#5f74b8;font-size:12px;letter-spacing:.22em">
+                CHART GOES LIVE ON LAUNCH
+              </div>
+              <div class="tail">TRACKED BY DEXSCREENER</div>
+            </div>
+          </div>
+          <div class="keys">
+            <a class="key go" href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />BUY</a>
+            <a class="key" href="https://dexscreener.com/robinhood/"><img src="assets/ic-dex.png" alt="" />DEX</a>
+            <a class="key" href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="signwrap">
+            <img src="assets/p-sign.webp" alt="wooden signpost" />
+            <div class="ca"><i>CONTRACT</i><b>soon</b><em>click to copy</em></div>
+          </div>
+          <div class="raftwrap mon">
+            <img class="bg" src="assets/s3-bg.webp" alt="hot spring lagoon at sunset" />
+            <div class="raft">
+              <img class="tube" src="assets/p-tube.webp" alt="pink swim ring" />
+              <img class="sit" src="assets/cut-sit.webp" alt="Kapy floating in the swim ring" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="hud">
+    <button class="key" id="kca">COPY CA</button>
+    <button class="key" data-go="1">LORE</button>
+    <button class="key" data-go="2">MEMES</button>
+    <button class="key" data-go="3">NUMBERS</button>
+  </div>
+  <div class="brand"><img src="assets/favicon.png" alt="" /><span>Kapy</span></div>
+
+  <button class="arrow l" id="prev" aria-label="previous screen">&#8249;</button>
+  <button class="arrow r" id="next" aria-label="next screen">&#8250;</button>
+  <div class="dots" id="dots"><span id="dnum">01 / 04</span></div>
+</div>
+
+<div class="lb" id="lb">
+  <div class="frame"><img id="lbimg" src="assets/m1.webp" alt="" /></div>
+  <div class="cap" id="lbcap"></div>
+  <button class="key x" id="lbx">CLOSE</button>
+  <button class="key p" id="lbp">&#9664;</button>
+  <button class="key n" id="lbn">&#9654;</button>
+</div>
+
+<script>
+(function(){
+  /* ---------- honest loader ---------- */
+  var files=['assets/s1-bg.webp','assets/s2-bg.webp','assets/s3-bg.webp','assets/s4-bg.webp',
+             'assets/cut-stand.webp','assets/cut-sit.webp','assets/p-palm.webp','assets/p-cloud.webp',
+             'assets/p-sign.webp','assets/p-boulder.webp','assets/p-tube.webp','assets/ava.webp',
+             'assets/m1.webp','assets/m2.webp','assets/m3.webp','assets/m4.webp','assets/m5.webp','assets/m6.webp'];
+  var bar=document.getElementById('bar'), pct=document.getElementById('pct'),
+      load=document.getElementById('load'), shell=document.getElementById('shell');
+  var cells=[]; for(var b=0;b<18;b++){ var c=document.createElement('i'); bar.appendChild(c); cells.push(c); }
+  var done=0, started=false;
+  function step(){
+    done++;
+    var p=Math.round(done/files.length*100);
+    pct.textContent=p+'%';
+    for(var k=0;k<cells.length;k++) cells[k].classList.toggle('on', k < Math.round(done/files.length*cells.length));
+    if(done>=files.length) enter();
+  }
+  function enter(){
+    if(started) return; started=true;
+    load.classList.add('gone'); shell.classList.add('on');
+    setTimeout(function(){ load.style.display='none'; }, 700);
+  }
+  files.forEach(function(f){ var im=new Image(); im.onload=im.onerror=step; im.src=f; });
+  document.getElementById('skip').addEventListener('click', enter);
+  setTimeout(enter, 9000);
+
+  /* ---------- screens ---------- */
+  var scrs=[].slice.call(document.querySelectorAll('.scr')), at=0;
+  var dnum=document.getElementById('dnum'), dots=document.getElementById('dots');
+  var dbtn=[];
+  scrs.forEach(function(_,i){
+    var b=document.createElement('button');
+    b.addEventListener('click', function(){ go(i); });
+    dots.insertBefore(b, dnum); dbtn.push(b);
+  });
+  function go(i){
+    at=(i+scrs.length)%scrs.length;
+    scrs.forEach(function(s,k){ s.classList.toggle('on', k===at); });
+    dbtn.forEach(function(b,k){ b.classList.toggle('on', k===at); });
+    dnum.textContent='0'+(at+1)+' / 0'+scrs.length;
+  }
+  document.getElementById('prev').addEventListener('click', function(){ go(at-1); });
+  document.getElementById('next').addEventListener('click', function(){ go(at+1); });
+  document.querySelectorAll('[data-go]').forEach(function(b){
+    b.addEventListener('click', function(){ go(parseInt(b.getAttribute('data-go'),10)); });
+  });
+  go(0);
+
+  /* ---------- two channels on the monitor ---------- */
+  var chv=[document.getElementById('ch1v'), document.getElementById('ch2v')],
+      chT=['CH 01 \u00b7 LIVE FROM THE BEACH','CH 02 \u00b7 HE FOUND A DRINK'],
+      montag=document.getElementById('montag'), chAt=0;
+  document.getElementById('chbtn').addEventListener('click', function(){
+    chv[chAt].classList.remove('on');
+    try{ chv[chAt].pause(); }catch(e){}
+    chAt=(chAt+1)%chv.length;
+    chv[chAt].classList.add('on');
+    chv[chAt].play().catch(function(){});
+    montag.textContent=chT[chAt];
+  });
+
+  /* ---------- coverflow: cards are objects in space ---------- */
+  var cards=[].slice.call(document.querySelectorAll('#cf .card')), cf=0;
+  var cfnum=document.getElementById('cfnum');
+  function layout(){
+    cards.forEach(function(c,i){
+      var d=i-cf, ad=Math.abs(d);
+      c.style.transform='translateX('+(d*38)+'%) translateZ('+(-ad*190)+'px) rotateY('+(-d*36)+'deg) rotateX('+(d?3:0)+'deg)';
+      c.style.opacity = ad>2 ? 0 : (ad===0 ? 1 : (ad===1 ? .72 : .34));
+      c.style.filter  = ad===0 ? 'none' : 'brightness(.6) saturate(.85)';
+      c.style.zIndex  = String(20-ad);
+      c.style.pointerEvents = ad>2 ? 'none' : 'auto';
+    });
+    cfnum.textContent='0'+(cf+1)+' / 0'+cards.length;
+  }
+  function cfgo(i){ cf=(i+cards.length)%cards.length; layout(); }
+  document.getElementById('cfp').addEventListener('click', function(){ cfgo(cf-1); });
+  document.getElementById('cfn').addEventListener('click', function(){ cfgo(cf+1); });
+  cards.forEach(function(c,i){
+    c.addEventListener('click', function(){ if(i===cf) show(i); else cfgo(i); });
+  });
+  layout();
+
+  /* ---------- lightbox ---------- */
+  var shots=[
+    ['assets/m1.webp','Kapy watching a wall of security monitors'],
+    ['assets/m3.webp','Kapy riding a green dragon above the clouds'],
+    ['assets/m5.webp','Kapy holding an oversized soda cup'],
+    ['assets/m2.webp','Kapy alone in an empty cinema'],
+    ['assets/m4.webp','Kapy walking away from an explosion'],
+    ['assets/m6.webp','Kapy reading a newspaper on the toilet'],
+    ['assets/ava.webp','Kapy standing in the island level']
+  ];
+  var lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg'),
+      lbcap=document.getElementById('lbcap'), lat=0;
+  function show(i){
+    lat=(i+shots.length)%shots.length;
+    lbimg.src=shots[lat][0]; lbimg.alt=shots[lat][1]; lbcap.textContent=shots[lat][1];
+    lb.classList.add('on');
+  }
+  function hide(){ lb.classList.remove('on'); }
+  document.getElementById('lbx').addEventListener('click', hide);
+  document.getElementById('lbp').addEventListener('click', function(){ show(lat-1); });
+  document.getElementById('lbn').addEventListener('click', function(){ show(lat+1); });
+  lb.addEventListener('click', function(e){ if(e.target===lb || (e.target.className||'')==='frame') hide(); });
+
+  /* HUD copy button mirrors the sign */
+  document.getElementById('kca').addEventListener('click', function(){
+    var v=(window.CONTRACT||'').trim();
+    if(v && navigator.clipboard) navigator.clipboard.writeText(v);
+    else go(3);
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(lb.classList.contains('on')){
+      if(e.key==='Escape') hide();
+      if(e.key==='ArrowLeft') show(lat-1);
+      if(e.key==='ArrowRight') show(lat+1);
+      return;
+    }
+    if(e.key==='ArrowLeft') go(at-1);
+    if(e.key==='ArrowRight') go(at+1);
+  });
+})();
+</script>
+</body>
+</html>

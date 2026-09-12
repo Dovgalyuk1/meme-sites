@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  window.CONTRACT = "";
+  window.TWITTER  = "https://x.com/urexscoinonsol";
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ex</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="She is still typing. She has been typing since 2019." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+/* ur ex's coin - skeleton from himster: click to enter, short cutscene, then one
+   OS window that fills the screen and never scrolls. Here the window is a 2003
+   messenger and the moving content is the conversation typing itself out. */
+:root{
+  --desk:#7d8ea3;
+  --desk-2:#4f5f73;
+  --chrome:#d8d5d0;
+  --chrome-d:#8a8781;
+  --title:#3c4a5e;
+  --title-2:#66788e;
+  --pink:#e8557f;
+  --pink-l:#ffd9e4;
+  --ink:#1b1b1f;
+  --mono:'Silkscreen',monospace;
+  --sys:Tahoma,Verdana,Geneva,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:var(--sys); color:var(--ink); overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #94a3b6 0%, var(--desk) 42%, var(--desk-2) 100%);
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+                   linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+img{display:block; max-width:100%}
+
+/* --- win95-ish bevels --- */
+.out{border:1px solid #000; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--chrome-d)}
+.in {border:1px solid #000; box-shadow: inset 1px 1px 0 var(--chrome-d), inset -1px -1px 0 #fff}
+
+/* --- 1. click to enter --- */
+#enter{
+  position:fixed; inset:0; z-index:120; background:#161a20;
+  display:grid; place-content:center; gap:22px; justify-items:center; cursor:pointer;
+}
+#enter img{width:132px; height:132px; border-radius:50%; border:3px solid #2c333d}
+#enter button{
+  font-family:var(--mono); font-size:15px; letter-spacing:.1em; padding:14px 26px;
+  background:var(--pink); color:#fff; border:1px solid #000; cursor:pointer;
+  box-shadow:5px 5px 0 rgba(0,0,0,.5); animation:blip 1.6s steps(2) infinite;
+}
+@keyframes blip{0%,60%{filter:none}61%,100%{filter:brightness(1.25)}}
+
+/* --- 2. cutscene --- */
+#cut{
+  position:fixed; inset:0; z-index:110; background:#0f1216; display:none;
+  place-content:center; justify-items:center; gap:18px; text-align:center;
+}
+#cut.show{display:grid}
+#cut .ring{
+  width:120px; height:120px; border-radius:50%; border:4px solid #2b323c; border-top-color:var(--pink);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#cut p{font-family:var(--mono); color:#9fb0c4; font-size:13px; letter-spacing:.08em; margin:0}
+#cut .skip{
+  position:absolute; right:20px; bottom:18px; font-family:var(--mono); font-size:11px;
+  color:#fff; background:var(--pink); border:1px solid #000; padding:8px 14px; cursor:pointer;
+}
+
+/* --- 3. the window --- */
+#app{position:fixed; inset:0; z-index:1; display:none; padding:22px 22px 0; opacity:0; transition:opacity .5s ease}
+#app.show{display:block}
+#app.lit{opacity:1}
+.win{
+  height:calc(100% - 40px); background:var(--chrome); display:flex; flex-direction:column;
+  border:1px solid #000; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--chrome-d), 8px 8px 0 rgba(0,0,0,.35);
+}
+.titlebar{
+  display:flex; align-items:center; gap:8px; padding:4px 5px;
+  background:linear-gradient(90deg, var(--title), var(--title-2)); color:#fff;
+  font-family:var(--mono); font-size:12px; letter-spacing:.06em;
+}
+.titlebar .dot{width:14px; height:14px; border-radius:50%; background:var(--pink); border:1px solid #00000055}
+.titlebar .sp{flex:1}
+.tb{width:19px; height:17px; background:var(--chrome); border:1px solid #000; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--chrome-d); font-size:10px; line-height:15px; text-align:center; color:#000; cursor:default; font-family:var(--sys)}
+.menu{
+  display:flex; gap:16px; padding:4px 10px; font-size:12px; border-bottom:1px solid var(--chrome-d);
+  background:var(--chrome);
+}
+.menu span{cursor:default}
+.menu u{text-decoration:underline}
+
+.body{flex:1; display:grid; grid-template-columns:1.25fr .95fr; gap:12px; padding:12px; min-height:0}
+
+/* chat side */
+.chat{background:#fff; display:flex; flex-direction:column; min-height:0}
+.chat-head{
+  display:flex; align-items:center; gap:10px; padding:8px 10px; border-bottom:1px solid var(--chrome-d);
+  background:var(--pink-l);
+}
+.chat-head img{width:38px; height:38px; border-radius:50%; border:1px solid #000}
+.chat-head b{font-size:13px; display:block}
+.chat-head small{font-size:11px; color:#8a5468}
+.log{flex:1; overflow:auto; padding:12px 12px 6px; display:flex; flex-direction:column; gap:9px; font-size:13.5px; line-height:1.4}
+.msg{max-width:78%; padding:8px 11px; border:1px solid #000; position:relative}
+.msg.her{background:var(--pink-l); align-self:flex-start; box-shadow:3px 3px 0 rgba(0,0,0,.18)}
+.msg.you{background:#e7eef7; align-self:flex-end; box-shadow:3px 3px 0 rgba(0,0,0,.18)}
+.msg em{font-style:normal; font-family:var(--mono); font-size:9px; letter-spacing:.08em; color:#7a7a86; display:block; margin-bottom:3px}
+.typing{align-self:flex-start; font-size:12px; color:#8a8a94; font-style:italic; padding-left:3px}
+.typing b{display:inline-block; animation:dots 1.4s infinite}
+@keyframes dots{0%,20%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.compose{display:flex; gap:8px; padding:9px 10px; border-top:1px solid var(--chrome-d); background:var(--chrome)}
+.compose .field{flex:1; background:#fff; padding:7px 9px; font-size:12px; color:#9a9aa2; border:1px solid #000; box-shadow: inset 1px 1px 0 var(--chrome-d)}
+.compose .send{font-family:var(--mono); font-size:11px; padding:7px 14px; background:var(--chrome); border:1px solid #000; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--chrome-d); color:#8a8a92}
+
+/* panel side */
+.panel{display:flex; flex-direction:column; gap:11px; min-height:0}
+.path{font-family:var(--mono); font-size:10px; letter-spacing:.05em; color:#3f4a58}
+.namewrap{text-align:left; padding:2px 0 0}
+.pre{font-family:var(--mono); font-size:12px; letter-spacing:.24em; color:var(--pink); text-transform:lowercase}
+.name{
+  font-family:var(--mono); font-weight:700; margin:2px 0 0; line-height:.9;
+  font-size:clamp(58px,9.5vw,112px); color:var(--pink);
+  text-shadow:
+    2px 2px 0 #fff, 5px 5px 0 #b23256, 8px 8px 0 #6d1c34,
+    11px 12px 0 rgba(0,0,0,.35);
+  -webkit-text-stroke:2px #2a0a16; paint-order:stroke fill;
+}
+.post{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:#3f4a58; margin:10px 0 0}
+.lore{
+  background:#fff; padding:11px 12px; font-size:13px; line-height:1.5; overflow:auto;
+  flex:1; min-height:90px;
+}
+.lore h4{font-family:var(--mono); font-size:10px; letter-spacing:.16em; margin:0 0 8px; color:#8a5468}
+.lore p{margin:0 0 9px}
+.lore p:last-child{margin:0}
+.gallery-btn{
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em; padding:9px 12px; cursor:pointer;
+  background:var(--chrome); text-align:center;
+}
+.acts{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+.act{
+  display:flex; align-items:center; justify-content:center; gap:7px; text-decoration:none; color:#151519;
+  font-family:var(--mono); font-size:11px; letter-spacing:.06em; padding:11px 6px; background:var(--chrome);
+}
+.act:active,.gallery-btn:active{box-shadow: inset 1px 1px 0 var(--chrome-d), inset -1px -1px 0 #fff}
+.act.buy{background:var(--pink); color:#fff}
+.act img{width:14px; height:14px}
+.act.buy img{filter:brightness(0) invert(1)}
+
+/* status bar with the CA */
+.status{
+  display:flex; align-items:center; gap:10px; border-top:1px solid var(--chrome-d);
+  padding:6px 9px; font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; background:var(--chrome);
+}
+.status .ca{display:flex; gap:7px; align-items:center; cursor:pointer; padding:3px 7px; background:#fff; border:1px solid #000; box-shadow: inset 1px 1px 0 var(--chrome-d); max-width:100%; overflow:hidden}
+.status .ca b{font-weight:400; color:var(--pink); word-break:break-all}
+.status .right{margin-left:auto; color:#5a6472; overflow:hidden; white-space:nowrap}
+
+/* taskbar marquee */
+.taskbar{
+  position:fixed; left:0; right:0; bottom:0; height:34px; background:var(--chrome);
+  border-top:1px solid #fff; display:flex; align-items:center; gap:10px; padding:0 8px;
+  box-shadow:0 -1px 0 #000; z-index:5;
+}
+.start{font-family:var(--mono); font-size:11px; padding:5px 12px; background:var(--chrome); border:1px solid #000; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--chrome-d)}
+.mq{flex:1; overflow:hidden; height:20px; position:relative; border:1px solid #000; box-shadow: inset 1px 1px 0 var(--chrome-d); background:#fff}
+.mq div{position:absolute; white-space:nowrap; font-family:var(--mono); font-size:10px; line-height:18px; color:#6a5560; animation:mq 26s linear infinite}
+@keyframes mq{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.clock{font-family:var(--mono); font-size:11px; color:#2c3440; padding:0 6px}
+
+/* photos modal */
+#photos{
+  position:fixed; inset:0; z-index:60; display:none; place-content:center; background:rgba(20,24,30,.55);
+}
+#photos.show{display:grid}
+#photos .frame{width:min(760px,92vw); background:var(--chrome); border:1px solid #000; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 var(--chrome-d), 9px 9px 0 rgba(0,0,0,.4)}
+#photos .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px; background:#fff}
+#photos figure{margin:0}
+#photos img{width:100%; aspect-ratio:1/1; object-fit:cover; border:1px solid #000}
+#photos figcaption{font-family:var(--mono); font-size:10px; letter-spacing:.04em; color:#6a5560; padding-top:6px}
+#photos .x{background:var(--pink); color:#fff}
+
+@media(max-width:900px){
+  #app{padding:12px 12px 0}
+  .body{grid-template-columns:1fr; grid-template-rows:1.1fr auto; overflow:auto}
+  .name{font-size:clamp(48px,14vw,82px)}
+  .lore{flex:none; max-height:120px}
+  #photos .grid{grid-template-columns:1fr 1fr}
+  .status .right{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}}
+</style>
+</head>
+<body>
+
+<div id="enter">
+  <img src="assets/ava.webp" alt="Two hands holding a stick" />
+  <button type="button">CLICK TO OPEN</button>
+</div>
+
+<div id="cut">
+  <div class="ring"></div>
+  <p id="cutline">connecting to her</p>
+  <div class="skip" id="skip">SKIP &gt;&gt;</div>
+</div>
+
+<div id="app">
+  <div class="win">
+    <div class="titlebar">
+      <span class="dot"></span>
+      <span>her &mdash; conversation</span>
+      <span class="sp"></span>
+      <span class="tb">_</span><span class="tb">[]</span><span class="tb">x</span>
+    </div>
+    <div class="menu"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>A</u>ctions</span><span><u>H</u>elp</span></div>
+
+    <div class="body">
+      <div class="chat out">
+        <div class="chat-head">
+          <img src="assets/ava.webp" alt="" />
+          <div><b>her</b><small id="pres">online &mdash; last seen forever ago</small></div>
+        </div>
+        <div class="log" id="log"></div>
+        <div class="compose">
+          <div class="field">type something you will regret</div>
+          <div class="send">SEND</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="path">C:\Users\you\Documents\her\</div>
+        <div class="namewrap">
+          <div class="pre">ur ex's</div>
+          <h1 class="name">COIN</h1>
+          <p class="post">she kept the stick. you kept the bag.</p>
+        </div>
+        <div class="lore out">
+          <h4>&gt; WHO IS SHE</h4>
+          <p>She has a wooden stick. Nobody knows where she got it. Nobody asks.</p>
+          <p>She holds it the same way every time and every single person who sees it thinks the exact same thing, and every single person pretends they did not.</p>
+          <p>That is the whole relationship. You still have her number.</p>
+        </div>
+        <div class="gallery-btn out" id="openPhotos">&gt; OPEN PHOTOS (3)</div>
+        <div class="acts">
+          <a class="act buy out" href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />BUY</a>
+          <a class="act out" href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+          <a class="act out" href="https://dexscreener.com/robinhood/">DEX</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="status">
+      <span class="ca">CA: <b class="ca-val">soon</b></span>
+      <span class="right">she is typing / she stopped typing / she is typing</span>
+    </div>
+  </div>
+</div>
+
+<div class="taskbar">
+  <span class="start">start</span>
+  <div class="mq"><div>she blocked you /// she unblocked you /// she looked at your story /// she did not reply /// she still has the stick /// you are fine /// you are completely fine ///</div></div>
+  <span class="clock" id="clock">--:--</span>
+</div>
+
+<div id="photos">
+  <div class="frame">
+    <div class="titlebar"><span class="dot"></span><span>PHOTOS.DIR</span><span class="sp"></span><span class="tb x" id="closePhotos">x</span></div>
+    <div class="grid">
+      <figure><img src="assets/hand-phone.webp" alt="A hand holding a phone with a blank screen" /><figcaption>she read it</figcaption></figure>
+      <figure><img src="assets/hand-tear.webp" alt="Two hands tearing a blank photo in half" /><figcaption>the split</figcaption></figure>
+      <figure><img src="assets/hand-ring.webp" alt="A hand dropping a gold ring" /><figcaption>keeping the stick</figcaption></figure>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var enter=document.getElementById('enter'), cut=document.getElementById('cut'),
+      app=document.getElementById('app'), skip=document.getElementById('skip'),
+      cutline=document.getElementById('cutline'), log=document.getElementById('log');
+
+  var SCRIPT=[
+    ['her','hey'],
+    ['you','hey'],
+    ['her','so you made a coin'],
+    ['you','yeah'],
+    ['her','with my hands on it'],
+    ['you','they are just hands'],
+    ['her','right'],
+    ['her','and the stick'],
+    ['you','the stick is a stick'],
+    ['her','ok'],
+    ['her','tell that to everyone who has seen it'],
+    ['you','i cannot control what people think'],
+    ['her','you named it after me'],
+    ['you','i named it after the situation'],
+    ['her','seen'],
+    ['you','are you still there'],
+    ['you','hello'],
+    ['you','are you typing']
+  ];
+
+  function bubble(who,text){
+    var d=document.createElement('div');
+    d.className='msg '+who;
+    d.innerHTML='<em>'+(who==='her'?'her':'you')+'</em>'+text;
+    log.appendChild(d); log.scrollTop=log.scrollHeight;
+  }
+  var typing=null;
+  function showTyping(){
+    hideTyping();
+    typing=document.createElement('div');
+    typing.className='typing'; typing.innerHTML='she is typing<b>...</b>';
+    log.appendChild(typing); log.scrollTop=log.scrollHeight;
+  }
+  function hideTyping(){ if(typing&&typing.parentNode){typing.parentNode.removeChild(typing);} typing=null; }
+
+  var i=0;
+  function step(){
+    if(i>=SCRIPT.length){ showTyping(); return; }
+    var line=SCRIPT[i++];
+    if(line[0]==='her'){
+      showTyping();
+      setTimeout(function(){ hideTyping(); bubble('her',line[1]); setTimeout(step, 900+Math.random()*700); }, 700+Math.random()*800);
+    } else {
+      bubble('you',line[1]);
+      setTimeout(step, 700+Math.random()*600);
+    }
+  }
+
+  var CUTLINES=['connecting to her','she is online','she is typing','she stopped typing'];
+  function runCut(){
+    var n=0;
+    var t=setInterval(function(){ n++; if(n<CUTLINES.length){ cutline.textContent=CUTLINES[n]; } }, 900);
+    var done=false;
+    function finish(){
+      if(done) return; done=true; clearInterval(t);
+      cut.classList.remove('show'); app.classList.add('show');
+      requestAnimationFrame(function(){ app.classList.add('lit'); });
+      setTimeout(step, 500);
+    }
+    skip.addEventListener('click', finish);
+    setTimeout(finish, 3900);
+  }
+
+  enter.addEventListener('click', function(){
+    enter.style.display='none'; cut.classList.add('show'); runCut();
+  });
+
+  function tick(){
+    var d=new Date(), h=d.getHours(), m=d.getMinutes();
+    document.getElementById('clock').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+  }
+  tick(); setInterval(tick, 20000);
+
+  var ph=document.getElementById('photos');
+  document.getElementById('openPhotos').addEventListener('click', function(){ ph.classList.add('show'); });
+  document.getElementById('closePhotos').addEventListener('click', function(){ ph.classList.remove('show'); });
+  ph.addEventListener('click', function(e){ if(e.target===ph) ph.classList.remove('show'); });
+})();
+</script>
+</body>
+</html>

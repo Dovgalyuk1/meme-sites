@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  window.CONTRACT = "0xD7972ae441d09D26e09Ba8655c503Eb4364B465C";
+  window.TWITTER  = "https://x.com/BehrWtf";
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Behr</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="the door is real. i measured it twice." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --u:min(1vw,1.66vh);
+  --W:calc(128 * var(--u));   /* back wall width  */
+  --H:calc(72  * var(--u));   /* wall height      */
+  --D:calc(190 * var(--u));   /* room depth       */
+  --P:calc(60  * var(--u));   /* short focal length so the side walls open up */
+  --Z:calc(var(--D)/2 - 84 * var(--u));  /* back wall lands at z = -84u */
+  --eye:34%;                  /* horizon sits high so the floor opens up */
+  --honey:#f0a428; --cream:#fff3dc; --ink:#2a1608; --gold:#ffce4d;
+  --disp:'Fredoka',sans-serif; --mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:#0d1b2a;color:var(--ink);font-family:var(--mono)}
+img{display:block}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+a{color:inherit;text-decoration:none}
+
+/* ================= the room ================= */
+#room{position:fixed;inset:0;perspective:var(--P);perspective-origin:50% var(--eye);
+  overflow:hidden;background:#1c4e86}
+.box{position:absolute;left:50%;top:var(--eye);width:0;height:0;transform-style:preserve-3d;
+  transform:translateZ(var(--Z)) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.face{position:absolute;left:50%;top:50%;background-size:100% 100%;background-repeat:no-repeat;
+  backface-visibility:visible}
+.f-back {width:var(--W);height:var(--H);margin-left:calc(var(--W)/-2);margin-top:calc(var(--H)/-2);
+  transform:translateZ(calc(var(--D)/-2));background-image:url(assets/wall.webp)}
+.f-left {width:var(--D);height:var(--H);margin-left:calc(var(--D)/-2);margin-top:calc(var(--H)/-2);
+  transform:rotateY(90deg) translateZ(calc(var(--W)/-2));background-image:url(assets/wall.webp)}
+.f-right{width:var(--D);height:var(--H);margin-left:calc(var(--D)/-2);margin-top:calc(var(--H)/-2);
+  transform:rotateY(-90deg) translateZ(calc(var(--W)/-2));background-image:url(assets/wall.webp)}
+.f-floor{width:var(--W);height:var(--D);margin-left:calc(var(--W)/-2);margin-top:calc(var(--D)/-2);
+  transform:rotateX(-90deg) translateZ(calc(var(--H)/2));background-image:url(assets/floor.webp);
+  background-size:26% 26%;background-repeat:repeat}
+.f-ceil {width:var(--W);height:var(--D);margin-left:calc(var(--W)/-2);margin-top:calc(var(--D)/-2);
+  transform:rotateX(90deg) translateZ(calc(var(--H)/2));background-image:url(assets/ceil.webp);
+  background-size:40% 40%;background-repeat:repeat}
+
+.shade{position:absolute;inset:0;z-index:1;pointer-events:none}
+.f-left  .shade{background:linear-gradient(270deg,rgba(9,26,52,.66),rgba(9,26,52,.08))}
+.f-right .shade{background:linear-gradient(90deg,rgba(9,26,52,.66),rgba(9,26,52,.08))}
+.f-back  .shade{background:linear-gradient(0deg,rgba(9,26,52,.5),rgba(9,26,52,0) 16%)}
+.f-floor .shade{background:linear-gradient(rgba(9,26,52,.5),rgba(9,26,52,.02))}
+.f-ceil  .shade{background:rgba(255,255,255,.05)}
+.on-wall{position:absolute;z-index:2}
+
+/* ---- things on the back wall ---- */
+.mark{position:absolute;left:50%;top:7%;translate:-50% 0;font-family:var(--disp);font-weight:700;
+  font-size:calc(var(--W)*.275);line-height:.9;letter-spacing:-.02em;white-space:nowrap;
+  color:var(--gold);-webkit-text-stroke:calc(var(--u)*1.4) var(--ink);paint-order:stroke fill;
+  text-shadow:0 calc(var(--u)*1.1) 0 var(--ink), 0 calc(var(--u)*2.4) calc(var(--u)*2) rgba(20,10,0,.3)}
+.tagline{position:absolute;left:50%;top:55%;translate:-50% 0;white-space:nowrap;
+  font-size:calc(var(--W)*.021);letter-spacing:.24em;color:#eaf6ff;
+  text-shadow:0 calc(var(--u)*.35) 0 rgba(16,52,96,.7)}
+.door{position:absolute;left:9%;bottom:0%;width:8.5%;transform-origin:0% 50%;cursor:pointer;
+  transition:transform .7s cubic-bezier(.3,.8,.3,1)}
+.door img{width:100%}
+.door.open{transform:rotateY(-74deg)}
+.doorgap{position:absolute;left:9%;bottom:0%;width:8.5%;aspect-ratio:460/690;opacity:0;
+  background:linear-gradient(180deg,#fff8d8,#ffd98a 55%,#f0a428);transition:opacity .5s;
+  box-shadow:0 0 calc(var(--u)*4) rgba(255,220,140,.9)}
+.doorgap.on{opacity:1}
+.note{position:absolute;right:6%;bottom:12%;width:17%;cursor:pointer}
+.note img{width:100%}
+.note .ca{position:absolute;left:12%;top:17%;width:76%;height:60%;display:flex;flex-direction:column;
+  justify-content:center;gap:.4em;transform:rotate(-1.4deg)}
+.note .ca i{font-style:normal;font-family:var(--disp);font-weight:700;
+  font-size:calc(var(--W)*.0145);letter-spacing:.12em;color:#8a5a22}
+.note .ca b{font-weight:500;font-size:calc(var(--W)*.0175);color:#231206;word-break:break-all;line-height:1.2}
+.note .ca em{font-style:normal;font-size:calc(var(--W)*.0125);color:#9a7346}
+
+/* ---- picture frames hung on the side walls ---- */
+.hang{border:calc(var(--u)*.55) solid #3a2410;background:#3a2410;line-height:0;cursor:pointer;
+  box-shadow:0 0 0 calc(var(--u)*.22) #f2ddb0, calc(var(--u)*.8) calc(var(--u)*1.1) calc(var(--u)*2.2) rgba(0,0,0,.55);
+  transition:filter .25s}
+.hang:hover{filter:brightness(1.14)}
+.hang img,.hang video{width:100%;height:100%;object-fit:cover;display:block}
+.hang .glass{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(118deg,rgba(255,255,255,.24) 0 20%,rgba(255,255,255,0) 44%)}
+.screenwall{position:absolute;z-index:2}
+.screenwall .cap{position:absolute;left:0;right:0;bottom:calc(var(--u)*-3.4);text-align:center;
+  font-size:calc(var(--u)*1.15);letter-spacing:.2em;color:#fff3dc;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+
+/* ================= flat planes in front ================= */
+.plane{position:fixed;inset:0;pointer-events:none}
+.tvwrap{position:absolute;left:5%;bottom:8vh;width:clamp(140px,13.5vw,206px);pointer-events:auto;cursor:pointer}
+.tvwrap>img{width:100%;filter:drop-shadow(0 14px 16px rgba(0,0,0,.5))}
+.tvscr{position:absolute;left:19.4%;top:39.8%;width:55.6%;height:39.4%;overflow:hidden;background:#05070c}
+.tvscr video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tvscr::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(rgba(0,0,0,.28) 0 1px,transparent 1px 3px)}
+.tvscr .glare{position:absolute;inset:0;z-index:2;
+  background:linear-gradient(115deg,rgba(255,255,255,.22) 0 22%,rgba(255,255,255,0) 46%)}
+.tvtag{position:absolute;left:0;right:0;bottom:-1.7em;text-align:center;font-size:11px;
+  letter-spacing:.2em;color:#fff3dc;text-shadow:0 2px 6px rgba(0,0,0,.75)}
+
+.bearwrap{position:absolute;left:55%;bottom:4vh;translate:-50% 0;height:min(54vh,44 * var(--u));
+  pointer-events:none}
+.bearwrap img{position:relative;height:100%;width:auto;filter:drop-shadow(0 12px 14px rgba(0,0,0,.45))}
+.bearwrap .shadow{position:absolute;left:50%;bottom:-1.5%;translate:-50% 0;width:106%;height:12%;
+  background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(6,18,38,.6),rgba(6,18,38,0) 72%);filter:blur(6px)}
+.bubble{position:absolute;left:76%;top:2%;min-width:12em;padding:11px 14px;background:var(--cream);
+  border:3px solid var(--ink);border-radius:14px;font-size:13px;line-height:1.35;color:var(--ink);
+  opacity:0;transform:translateY(8px) scale(.92);transform-origin:0% 100%;
+  transition:opacity .3s,transform .3s;box-shadow:5px 6px 0 rgba(42,22,8,.45)}
+.bubble.on{opacity:1;transform:translateY(0) scale(1)}
+.bubble::after{content:"";position:absolute;left:-11px;bottom:16px;width:0;height:0;
+  border:9px solid transparent;border-right-color:var(--ink)}
+
+/* ================= flat UI ================= */
+.brand{position:fixed;left:22px;top:20px;z-index:40;display:flex;align-items:center;gap:10px}
+.brand img{width:40px;height:40px;border-radius:12px;border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(42,22,8,.5)}
+.brand span{font-family:var(--disp);font-weight:700;font-size:19px;color:var(--cream);
+  text-shadow:0 2px 0 var(--ink),0 4px 10px rgba(0,0,0,.4)}
+.links{position:fixed;right:22px;bottom:22px;z-index:40;display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.links a{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:700;font-size:14px;
+  padding:11px 16px;border-radius:999px;background:var(--cream);color:var(--ink);
+  border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .14s,box-shadow .14s}
+.links a:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.links a img{width:15px;height:15px}
+.links a.buy{background:var(--honey)}
+
+/* ================= gallery + lightbox ================= */
+#gal{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:rgba(10,22,38,.72);padding:20px}
+#gal.on{display:grid}
+#gal .win{width:min(900px,100%);max-height:calc(100vh - 44px);display:flex;flex-direction:column;
+  background:var(--cream);border:4px solid var(--ink);border-radius:18px;overflow:hidden;
+  box-shadow:0 10px 0 rgba(42,22,8,.5)}
+#gal .bar{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--honey);
+  border-bottom:4px solid var(--ink)}
+#gal .bar span{font-family:var(--disp);font-weight:700;font-size:16px;flex:1}
+#gal .bar button{width:30px;height:30px;border-radius:50%;background:#e0483c;color:#fff;
+  border:3px solid var(--ink);font-size:14px;line-height:1}
+#gal .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:22px;padding:26px;
+  overflow-y:auto;perspective:1200px;perspective-origin:50% 42%}
+#gal .grid button{padding:0;line-height:0;transition:transform .32s cubic-bezier(.2,.8,.3,1),filter .32s;
+  filter:drop-shadow(8px 10px 12px rgba(42,22,8,.45))}
+#gal .grid img{width:100%;aspect-ratio:1;object-fit:cover;border:3px solid var(--ink);border-radius:12px}
+#gal .grid button:nth-child(3n+1){transform:rotateY(22deg) rotateX(-6deg) translateZ(-24px)}
+#gal .grid button:nth-child(3n+2){transform:rotateY(-5deg) rotateX(8deg) translateZ(12px)}
+#gal .grid button:nth-child(3n+3){transform:rotateY(-23deg) rotateX(-3deg) translateZ(-16px)}
+#gal .grid button:hover{transform:rotateY(0) rotateX(0) translateZ(56px);filter:drop-shadow(0 18px 20px rgba(42,22,8,.6))}
+
+.lb{position:fixed;inset:0;z-index:80;display:none;background:rgba(10,20,36,.95)}
+.lb.on{display:block}
+.lb .frame{position:absolute;inset:clamp(56px,8vh,76px) clamp(58px,7vw,92px) clamp(60px,10vh,84px);
+  display:flex;align-items:center;justify-content:center}
+.lb .frame img{width:100%;height:100%;object-fit:contain;border-radius:10px;filter:drop-shadow(0 20px 40px rgba(0,0,0,.7))}
+.lb .cap{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:13px;color:var(--cream)}
+.lb button{position:absolute;font-family:var(--disp);font-weight:700;font-size:14px;padding:10px 15px;
+  border-radius:999px;background:var(--cream);color:var(--ink);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+.lb .x{top:16px;right:18px}
+.lb .p{left:16px;top:50%;translate:0 -50%}
+.lb .n{right:16px;top:50%;translate:0 -50%}
+
+@media (max-width:900px){
+  :root{--u:min(1.55vw,1.1vh); --eye:32%}
+  .tvwrap{left:3%;bottom:5vh;width:31vw}
+  .bearwrap{height:min(40vh,40 * var(--u));left:66%}
+  .bubble{left:auto;right:78%;top:0}
+  .bubble::after{left:auto;right:-11px;border-right-color:transparent;border-left-color:var(--ink)}
+  .links{right:12px;bottom:12px;gap:6px}
+  .links a{font-size:12px;padding:9px 12px}
+  .brand{left:12px;top:12px}
+  #gal .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;padding:16px}
+  .lb .frame{inset:52px 12px 74px}
+  .lb .p{left:24%;top:auto;bottom:14px;translate:0 0}
+  .lb .n{right:24%;top:auto;bottom:14px;translate:0 0}
+  .lb .cap{bottom:64px}
+}
+</style>
+</head>
+<body>
+
+<div id="room">
+  <div class="box" id="box">
+    <div class="face f-ceil"><div class="shade"></div></div>
+    <div class="face f-floor"><div class="shade"></div></div>
+
+    <!-- LEFT WALL: the big screen -->
+    <div class="face f-left">
+      <div class="shade"></div>
+      <div class="screenwall" style="left:56%;top:14%;width:19%;aspect-ratio:1">
+        <div class="hang" style="position:relative;width:100%;height:100%" id="wallscreen">
+          <video src="assets/loop2.mp4" poster="assets/poster2.jpg" autoplay loop muted playsinline preload="none"></video>
+          <div class="glass"></div>
+        </div>
+        <div class="cap">OUTSIDE FOOTAGE 02</div>
+      </div>
+      <div class="on-wall hang" data-i="0" style="left:89%;top:21%;width:7%;aspect-ratio:1"><img src="assets/m1.webp" alt="Behr sitting by a campfire" /><div class="glass"></div></div>
+      <div class="on-wall hang" data-i="3" style="left:89%;top:62%;width:7%;aspect-ratio:1"><img src="assets/m4.webp" alt="Behr falling under a parachute" /><div class="glass"></div></div>
+    </div>
+
+    <!-- RIGHT WALL: the frames -->
+    <div class="face f-right">
+      <div class="shade"></div>
+      <div class="on-wall hang" data-i="1" style="left:25%;top:15%;width:13%;aspect-ratio:1"><img src="assets/m2.webp" alt="Behr grilling skewers" /><div class="glass"></div></div>
+      <div class="on-wall hang" data-i="2" style="left:14%;top:17%;width:10%;aspect-ratio:1"><img src="assets/m3.webp" alt="Behr digging a hole" /><div class="glass"></div></div>
+      <div class="on-wall hang" data-i="4" style="left:25%;top:57%;width:13%;aspect-ratio:1"><img src="assets/m5.webp" alt="Behr in a fur coat and gold chains" /><div class="glass"></div></div>
+      <div class="on-wall hang" data-i="5" style="left:14%;top:55%;width:10%;aspect-ratio:1"><img src="assets/m6.webp" alt="Behr dancing alone in an empty club" /><div class="glass"></div></div>
+    </div>
+
+    <!-- BACK WALL -->
+    <div class="face f-back">
+      <div class="shade"></div>
+      <h1 class="mark">Behr</h1>
+      <div class="tagline">THE OUTSIDE, BROUGHT INSIDE</div>
+      <div class="doorgap" id="doorgap"></div>
+      <div class="door" id="door"><img src="assets/p-door.webp" alt="a tiny wooden door in the wall" /></div>
+      <div class="note">
+        <img src="assets/p-note.webp" alt="a sheet of paper taped to the wall" />
+        <div class="ca"><i>CONTRACT</i><b>soon</b><em>click to copy</em></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="plane" id="planeMid">
+  <div class="tvwrap" id="tv">
+    <img src="assets/p-tv.webp" alt="a small old television" />
+    <div class="tvscr">
+      <video src="assets/loop.mp4" poster="assets/poster.jpg" autoplay loop muted playsinline preload="metadata"></video>
+      <div class="glare"></div>
+    </div>
+    <div class="tvtag">OUTSIDE FOOTAGE 01</div>
+  </div>
+</div>
+
+<div class="plane" id="planeNear">
+  <div class="bearwrap">
+    <div class="shadow"></div>
+    <img src="assets/bear.webp" alt="Behr sitting in the middle of the room" />
+    <div class="bubble" id="bubble">i measured it twice.</div>
+  </div>
+</div>
+
+<div class="brand"><img src="assets/favicon.png" alt="" /><span>Behr</span></div>
+
+<nav class="links">
+  <a class="buy" href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />Buy</a>
+  <a href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+  <a href="https://dexscreener.com/robinhood/"><img src="assets/ic-dex.png" alt="" />Chart</a>
+</nav>
+
+<div id="gal">
+  <div class="win">
+    <header class="bar">
+      <span>OUTSIDE FOOTAGE</span>
+      <button id="galx" aria-label="close">&#10005;</button>
+    </header>
+    <div class="grid" id="grid">
+      <button data-i="0"><img src="assets/m1.webp" alt="Behr sitting by a campfire" /></button>
+      <button data-i="1"><img src="assets/m2.webp" alt="Behr grilling skewers" /></button>
+      <button data-i="2"><img src="assets/m3.webp" alt="Behr digging a hole" /></button>
+      <button data-i="3"><img src="assets/m4.webp" alt="Behr falling under a parachute" /></button>
+      <button data-i="4"><img src="assets/m5.webp" alt="Behr in a fur coat and gold chains" /></button>
+      <button data-i="5"><img src="assets/m6.webp" alt="Behr dancing alone in an empty club" /></button>
+      <button data-i="6"><img src="assets/ava.webp" alt="Behr in his painted room" /></button>
+    </div>
+  </div>
+</div>
+
+<div class="lb" id="lb">
+  <div class="frame"><img id="lbimg" src="assets/m1.webp" alt="" /></div>
+  <div class="cap" id="lbcap"></div>
+  <button class="x" id="lbx">CLOSE</button>
+  <button class="p" id="lbp">&#8249;</button>
+  <button class="n" id="lbn">&#8250;</button>
+</div>
+
+<script>
+(function(){
+  var box=document.getElementById('box'), mid=document.getElementById('planeMid'),
+      near=document.getElementById('planeNear'), room=document.getElementById('room');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var eye=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eye'))||34;
+
+  var tx=0,ty=0,cx=0,cy=0,raf=null;
+  function apply(){
+    cx += (tx-cx)*.09; cy += (ty-cy)*.09;
+    box.style.transform='translateZ(var(--Z)) rotateX('+(cy*2.4)+'deg) rotateY('+(cx*-3.6)+'deg)';
+    room.style.perspectiveOrigin=(50+cx*4)+'% '+(eye+cy*4)+'%';
+    mid.style.transform ='translate3d('+(cx*-20)+'px,'+(cy*-10)+'px,0)';
+    near.style.transform='translate3d('+(cx*-36)+'px,'+(cy*-14)+'px,0)';
+    if(Math.abs(tx-cx)>.001||Math.abs(ty-cy)>.001){ raf=requestAnimationFrame(apply); } else { raf=null; }
+  }
+  if(!reduce){
+    window.addEventListener('pointermove', function(e){
+      tx=(e.clientX/window.innerWidth-.5)*2; ty=(e.clientY/window.innerHeight-.5)*2;
+      if(!raf) raf=requestAnimationFrame(apply);
+    }, {passive:true});
+  }
+
+  /* the tiny door actually opens */
+  var door=document.getElementById('door'), gap=document.getElementById('doorgap'),
+      bubble=document.getElementById('bubble'), open=false, bt=null;
+  door.addEventListener('click', function(){
+    open=!open;
+    door.classList.toggle('open', open);
+    gap.classList.toggle('on', open);
+    bubble.classList.toggle('on', open);
+    if(bt) clearTimeout(bt);
+    if(open) bt=setTimeout(function(){ bubble.classList.remove('on'); }, 4200);
+  });
+
+  /* every frame opens full size */
+  var shots=[
+    ['assets/m1.webp','Behr sitting by a campfire'],
+    ['assets/m2.webp','Behr grilling skewers'],
+    ['assets/m3.webp','Behr digging a hole'],
+    ['assets/m4.webp','Behr falling under a parachute'],
+    ['assets/m5.webp','Behr in a fur coat and gold chains'],
+    ['assets/m6.webp','Behr dancing alone in an empty club'],
+    ['assets/ava.webp','Behr in his painted room']
+  ];
+  var lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg'),
+      lbcap=document.getElementById('lbcap'), lat=0;
+  function show(i){
+    lat=(i+shots.length)%shots.length;
+    lbimg.src=shots[lat][0]; lbimg.alt=shots[lat][1]; lbcap.textContent=shots[lat][1];
+    lb.classList.add('on');
+  }
+  function hideLb(){ lb.classList.remove('on'); }
+  document.getElementById('lbx').addEventListener('click', hideLb);
+  document.getElementById('lbp').addEventListener('click', function(){ show(lat-1); });
+  document.getElementById('lbn').addEventListener('click', function(){ show(lat+1); });
+  lb.addEventListener('click', function(e){ if(e.target===lb || (e.target.className||'')==='frame') hideLb(); });
+  document.getElementById('grid').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    show(parseInt(b.getAttribute('data-i'),10)||0);
+  });
+  document.querySelectorAll('.f-right .hang, .f-left .hang[data-i]').forEach(function(f){
+    f.addEventListener('click', function(){ show(parseInt(f.getAttribute('data-i'),10)||0); });
+  });
+
+  var gal=document.getElementById('gal');
+  document.getElementById('tv').addEventListener('click', function(){ gal.classList.add('on'); });
+  document.getElementById('wallscreen').addEventListener('click', function(){ gal.classList.add('on'); });
+  document.getElementById('galx').addEventListener('click', function(){ gal.classList.remove('on'); });
+  gal.addEventListener('click', function(e){ if(e.target===gal) gal.classList.remove('on'); });
+
+  document.addEventListener('keydown', function(e){
+    if(lb.classList.contains('on')){
+      if(e.key==='Escape') hideLb();
+      if(e.key==='ArrowLeft') show(lat-1);
+      if(e.key==='ArrowRight') show(lat+1);
+      return;
+    }
+    if(e.key==='Escape') gal.classList.remove('on');
+  });
+})();
+</script>
+</body>
+</html>

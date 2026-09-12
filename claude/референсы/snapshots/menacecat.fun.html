@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  /* SETTINGS - everything is changed here, at the top, in ONE place */
+  window.CONTRACT = "";   /* contract address. empty = "soon" */
+  window.TWITTER  = "https://x.com/Menacepf";   /* link to X. empty = plain x.com link */
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menace</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="everything was fine before i got here" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --sky:#2f8ede; --sky-deep:#1663ab; --grass:#63b52a; --grass-deep:#3b7a19;
+  --cream:#fdf6e2; --ink:#181410; --ember:#ff7a1a; --ash:#241d19;
+  --disp:"Bowlby One", system-ui, sans-serif;
+  --mono:"Space Mono", ui-monospace, monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:#0b1622; color:var(--cream); font-family:var(--mono);
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- entry gate ---------- */
+#gate{
+  position:fixed; inset:0; z-index:80; display:grid; place-items:center;
+  background:rgba(8,18,30,.52); backdrop-filter:blur(3px);
+  transition:opacity .7s ease, visibility .7s ease;
+}
+#gate.is-gone{opacity:0; visibility:hidden; pointer-events:none}
+#gate button{
+  font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.34em;
+  color:var(--cream); background:transparent; cursor:pointer;
+  border:1px solid rgba(253,246,226,.7); padding:20px 46px 20px 50px;
+  transition:background .25s, letter-spacing .25s, color .25s;
+}
+#gate button:hover{background:var(--cream); color:var(--ink); letter-spacing:.42em}
+
+/* ---------- stage ---------- */
+.stage{position:fixed; inset:0; overflow:hidden; isolation:isolate}
+.frame{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:2;
+  width:max(100vw, 177.8vh); height:max(56.25vw, 100vh);
+}
+.frame > *{position:absolute}
+.bg{
+  inset:0; width:100%; height:100%; object-fit:cover;
+}
+.frame{filter:blur(16px) saturate(.7) brightness(.72); transition:filter 1.1s ease .15s}
+body.is-open .frame{filter:none}
+
+/* ---------- the name, standing behind him ---------- */
+.name{
+  left:50%; top:45%; transform:translate(-50%,-50%);
+  font-family:var(--disp); font-weight:400; line-height:.82;
+  font-size:min(22vw, 31vh); letter-spacing:.012em; white-space:nowrap;
+  z-index:2; position:absolute;
+  filter:drop-shadow(0 9px 0 #b98a2c) drop-shadow(0 17px 0 #7d5a18)
+         drop-shadow(0 26px 30px rgba(8,22,38,.5));
+}
+.name span{
+  display:block; position:relative; z-index:1;
+  background:linear-gradient(#fffdf4 36%, #ffe6a0 58%, #eaa92c 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.name:before{
+  content:"MENACE"; position:absolute; left:0; top:0; color:var(--ink);
+  -webkit-text-stroke:14px var(--ink);
+}
+
+/* ---------- scenery layers ---------- */
+.prop{z-index:3}
+.prop img{width:100%; height:auto; display:block}
+@keyframes hover-drift{0%,100%{translate:0 0}50%{translate:0 -1.1%}}
+
+#p-sun{left:4.5%; top:2%; width:15%}
+#p-cloud{right:8%; top:8%; width:21%; animation-duration:9s}
+.cat{left:50%; bottom:-2%; width:25%; transform:translateX(-50%); z-index:4;
+  filter:drop-shadow(0 26px 26px rgba(20,40,10,.4))}
+
+/* ---------- hud laid along the edges, no navbar ---------- */
+.hud{position:fixed; inset:0; z-index:10; pointer-events:none;
+     opacity:0; transition:opacity .8s ease .35s}
+body.is-open .hud{opacity:1}
+.hud a, .hud button, .hud .ca{pointer-events:auto}
+
+.links{position:absolute; left:26px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:10px}
+.links a{
+  display:flex; align-items:center; gap:9px; text-decoration:none;
+  font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--ink);
+  background:var(--cream); border:2px solid var(--ink); padding:9px 15px;
+  box-shadow:4px 4px 0 rgba(20,25,15,.45);
+  transition:transform .16s, box-shadow .16s;
+}
+.links a:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(20,25,15,.5)}
+.links a:active{transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(20,25,15,.5)}
+.links img{width:13px; height:13px; display:block}
+
+.lede{
+  position:absolute; left:50%; transform:translateX(-50%); top:22px;
+  font-size:12px; letter-spacing:.12em; color:#fff;
+  background:rgba(11,26,44,.42); padding:8px 16px; backdrop-filter:blur(3px);
+  text-shadow:0 2px 8px rgba(10,25,45,.9);
+}
+.memes-btn{
+  position:absolute; right:26px; bottom:26px; cursor:pointer;
+  font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.22em;
+  color:var(--ink); background:#ffe27a; border:2px solid var(--ink); padding:11px 20px;
+  box-shadow:4px 4px 0 rgba(20,25,15,.45); transition:transform .16s, box-shadow .16s;
+}
+.memes-btn:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(20,25,15,.5)}
+
+.ca{
+  position:absolute; left:26px; bottom:26px; max-width:min(60vw,520px);
+  font-size:11px; letter-spacing:.06em; color:#eafbe0;
+  background:rgba(16,34,12,.72); border-left:3px solid #8fe04a;
+  padding:10px 15px; backdrop-filter:blur(4px);
+  transition:background .8s ease, border-color .8s ease, color .8s ease;
+}
+.ca span{opacity:.6; letter-spacing:.2em; font-weight:700}
+.ca b{font-weight:700; word-break:break-all}
+
+/* ---------- memes window ---------- */
+.win{
+  position:fixed; z-index:60; left:50%; top:50%; transform:translate(-50%,-50%) scale(.96);
+  width:min(92vw,760px); background:#d9d5c4; border:1px solid #000;
+  box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 #8a8f96, 8px 10px 0 rgba(0,0,0,.45);
+  opacity:0; visibility:hidden; transition:opacity .28s, visibility .28s, transform .28s;
+}
+.win.is-on{opacity:1; visibility:visible; transform:translate(-50%,-50%) scale(1)}
+.winbar{
+  display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(#3f8fe0,#1b5fb4); color:#fff; padding:6px 8px 6px 12px;
+  font-size:11px; font-weight:700; letter-spacing:.18em;
+}
+.winbar button{
+  width:20px; height:18px; cursor:pointer; background:#d9d5c4; color:#000;
+  border:1px solid #000; box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 #8a8f96;
+  font-family:var(--mono); font-size:11px; line-height:1;
+}
+.wingrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px}
+.wingrid video{
+  width:100%; aspect-ratio:1; object-fit:cover; display:block;
+  border:1px solid #000; box-shadow:inset 1px 1px 0 #8a8f96, inset -1px -1px 0 #fff;
+}
+.wingrid img{
+  width:100%; aspect-ratio:1; object-fit:cover; display:block; cursor:pointer;
+  border:1px solid #000; box-shadow:inset 1px 1px 0 #8a8f96, inset -1px -1px 0 #fff;
+  transition:transform .18s;
+}
+.wingrid img:hover{transform:scale(1.04)}
+
+.lightbox{
+  position:fixed; inset:0; z-index:70; background:rgba(6,12,20,.86);
+  display:grid; place-items:center; padding:5vh 5vw; cursor:zoom-out;
+  opacity:0; visibility:hidden; transition:opacity .25s, visibility .25s;
+}
+.lightbox.is-on{opacity:1; visibility:visible}
+.lightbox img{max-width:min(88vw,760px); max-height:86vh; border:3px solid var(--cream);
+  box-shadow:0 30px 60px rgba(0,0,0,.6)}
+
+/* ---------- texture over the whole page ---------- */
+.grain{
+  position:fixed; inset:0; z-index:50; pointer-events:none;
+  background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.09) 3px 4px);
+  mix-blend-mode:multiply; opacity:.55;
+}
+.vig{position:fixed; inset:0; z-index:49; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 52%, rgba(6,14,24,.5) 100%)}
+
+@media (max-width:860px){
+  /* on a portrait screen the 16:9 frame is far wider than the viewport,
+     so every layer moves into the narrow strip that is actually visible */
+  .name{font-size:min(15.5vw,13vh); top:41%}
+  .cat{width:11.5%; bottom:2%}
+  #p-sun{left:38%; top:4%; width:7.5%}
+  #p-cloud{right:37%; top:10%; width:9%}
+  .links{left:12px; top:auto; bottom:92px; transform:none; flex-direction:row; flex-wrap:wrap; gap:7px}
+  .links a{padding:8px 12px; font-size:10px}
+  .ca{left:12px; right:12px; bottom:12px; max-width:none}
+  .memes-btn{right:12px; top:56px; bottom:auto; padding:9px 14px}
+  .lede{font-size:10px; top:56px; width:82vw; text-align:center; padding:7px 12px}
+  .wingrid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <div class="frame">
+    <img class="bg" src="assets/bg-hill.webp" alt="A green hill under a blue sky" />
+
+    <h1 class="name"><span>MENACE</span></h1>
+
+    <div class="prop" id="p-sun"><img src="assets/sun.webp" alt="The sun over the hill" /></div>
+    <div class="prop" id="p-cloud"><img src="assets/cloud.webp" alt="A cloud over the hill" /></div>
+
+    <img class="cat" src="assets/cat.webp" alt="Menace standing on the hill" />
+  </div>
+</main>
+
+<div class="hud">
+  <p class="lede">everything was fine before i got here</p>
+
+  <nav class="links">
+    <a href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />Buy</a>
+    <a href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+    <a href="https://dexscreener.com/robinhood/"><img src="assets/ic-dex.png" alt="" />Chart</a>
+  </nav>
+
+  <button class="memes-btn" id="open-memes">MEMES</button>
+  <div class="ca"><span>CA</span> <b>soon</b></div>
+</div>
+
+<div class="win" id="memes">
+  <div class="winbar">MENACE.DIR <button id="close-memes" aria-label="Close">x</button></div>
+  <div class="wingrid">
+    <video id="clip" src="assets/scene.mp4" poster="assets/scene-poster.jpg"
+           muted loop autoplay playsinline preload="metadata"></video>
+    <img src="assets/meme-02.webp" alt="Menace on the beach with a melting ice cream" />
+    <img src="assets/meme-03.webp" alt="Menace in a video rental aisle" />
+    <img src="assets/meme-04.webp" alt="Menace on a stone bridge in the fog" />
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox"><img src="" alt="" /></div>
+
+<div class="grain"></div>
+<div class="vig"></div>
+
+<div id="gate"><button id="enter">ENTER</button></div>
+
+<script>
+(function(){
+  var body = document.body;
+  var gate = document.getElementById('gate');
+
+  document.getElementById('enter').addEventListener('click', function(){
+    gate.classList.add('is-gone');
+    body.classList.add('is-open');
+  });
+
+  /* memes window + lightbox */
+  var win = document.getElementById('memes');
+  var lb = document.getElementById('lightbox');
+  var clip = document.getElementById('clip');
+  document.getElementById('open-memes').addEventListener('click', function(){
+    win.classList.add('is-on');
+    if(clip && clip.play){ var p = clip.play(); if(p && p.catch) p.catch(function(){}); }
+  });
+  document.getElementById('close-memes').addEventListener('click', function(){ win.classList.remove('is-on'); });
+  document.querySelectorAll('.wingrid img').forEach(function(im){
+    im.addEventListener('click', function(){
+      lb.querySelector('img').src = im.src;
+      lb.querySelector('img').alt = im.alt;
+      lb.classList.add('is-on');
+    });
+  });
+  lb.addEventListener('click', function(){ lb.classList.remove('is-on'); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ lb.classList.remove('is-on'); win.classList.remove('is-on'); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  window.CONTRACT = "";
+  window.TWITTER  = "https://x.com/CoperCatonsol";
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(), TW = (window.TWITTER || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href')||"";
+      if(h.indexOf('ponsfamily.com')>-1){ if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){ if(navigator.clipboard) navigator.clipboard.writeText(CA); });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Coper Cat</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="Everything is fine and I have a reason ready for the part that is not." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --sky:#79cff5; --ink:#2a1c0b; --card:#fff6e3; --paper:#ffeec9;
+  --hot:#f2861c; --cyan:#22b3d6; --lime:#5fd12f; --sun:#ffd24a; --grape:#8a5bd6;
+  --pix:"Press Start 2P",monospace; --term:"VT323",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--sky);color:var(--ink);font-family:var(--term)}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+/* ---------- desktop wallpaper ---------- */
+.desk{position:fixed;inset:0;overflow:hidden;display:grid;place-items:center;padding:18px 18px 74px}
+.wall{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.1)}
+.wall-tint{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(#79cff52e,#5fd12f24)}
+
+/* ---------- chunky window chrome ---------- */
+.box{border:4px solid var(--ink);box-shadow:6px 6px 0 0 var(--grape);background:var(--card)}
+.win{position:relative;z-index:3;width:min(1180px,100%);height:min(780px,calc(100vh - 108px));min-height:0;
+  display:flex;flex-direction:column;transition:transform .3s ease,opacity .3s ease}
+.win.min{transform:translateY(60vh) scale(.7);opacity:0;pointer-events:none}
+.bar-title{display:flex;align-items:center;gap:10px;padding:9px 10px;
+  background:linear-gradient(90deg,var(--hot),var(--sun));border-bottom:4px solid var(--ink)}
+.bar-title img{width:20px;height:20px;border:2px solid var(--ink)}
+.bar-title span{font:400 12px/1 var(--pix)}
+.bar-title .dots{margin-left:auto;display:flex;gap:6px}
+.bar-title .dots button{width:22px;height:19px;border:2px solid var(--ink);background:var(--card);
+  font:400 8px/1 var(--pix);display:grid;place-items:center}
+.bar-title .dots button:hover{background:var(--sun)}
+.win-body{flex:1;display:grid;grid-template-columns:1.05fr 1fr;gap:16px;padding:16px;min-height:0}
+
+/* ---------- left: the TV ---------- */
+.tv-col{display:flex;flex-direction:column;gap:12px;min-height:0}
+.tv{position:relative;flex:1;min-height:0;overflow:hidden;cursor:pointer;
+  border:4px solid var(--ink);background:#123;box-shadow:inset 0 0 0 4px #ffffff2e}
+.tv img{width:100%;height:100%;object-fit:cover;transition:opacity .18s ease}
+.tv .crt{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;
+  background:repeating-linear-gradient(rgba(0,0,0,.18) 0 1px,transparent 1px 4px)}
+.tv .roll{position:absolute;left:0;right:0;height:30%;pointer-events:none;
+  background:linear-gradient(#ffffff00,#ffffff30,#ffffff00);animation:scanroll 5s linear infinite}
+@keyframes scanroll{from{top:-30%}to{top:100%}}
+.tv-tag{position:absolute;top:8px;left:10px;z-index:2;font:400 9px/1.7 var(--pix);color:#fff;
+  text-shadow:2px 2px 0 #000}
+.tv-tag i{color:#ff4d4d;font-style:normal}
+.pal{position:absolute;top:8px;right:10px;z-index:2;display:flex;height:14px;border:2px solid #000}
+.pal i{width:13px}
+.tv-status{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--lime);
+  border:4px solid var(--ink);font:400 9px/1.5 var(--pix)}
+.tv-status b{font-weight:400;margin-left:auto;letter-spacing:2px}
+.memes-btn{padding:11px;border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);
+  background:linear-gradient(90deg,var(--hot),var(--sun),var(--lime),var(--cyan));
+  background-size:300% 100%;animation:shift 6s linear infinite;
+  font:400 16px/1 var(--pix);color:#fff;text-shadow:3px 3px 0 var(--ink);letter-spacing:2px}
+@keyframes shift{to{background-position:300% 0}}
+.memes-btn:hover{filter:brightness(1.08)}
+.rail{border:4px solid var(--ink);background:var(--paper);padding:8px}
+.rail small{display:block;font:400 8px/1 var(--pix);color:var(--grape);margin-bottom:8px}
+.rail-strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.rail-strip::-webkit-scrollbar{display:none}
+.rail-strip img{width:54px;height:54px;flex:0 0 auto;border:2px solid var(--ink);cursor:pointer}
+.rail-strip img:hover{outline:3px solid var(--hot)}
+
+/* ---------- right: panel ---------- */
+.panel{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
+.path{font:400 10px/1 var(--pix);color:var(--grape)}
+.name{font:400 clamp(24px,3.5vw,50px)/1.05 var(--pix);letter-spacing:2px;word-break:break-word}
+.name i{font-style:normal}
+.name i:nth-of-type(1){color:var(--hot)}   .name i:nth-of-type(2){color:var(--sun)}
+.name i:nth-of-type(3){color:var(--lime)}  .name i:nth-of-type(4){color:var(--cyan)}
+.name i:nth-of-type(5){color:var(--grape)} .name i:nth-of-type(6){color:var(--hot)}
+.name i:nth-of-type(7){color:var(--sun)}   .name i:nth-of-type(8){color:var(--lime)}
+.tagline{font:400 22px/1.2 var(--term);color:var(--hot)}
+.lore{border:4px solid var(--ink);background:#fffdf6;padding:12px 14px;max-height:180px;overflow:auto}
+.lore h2{font:400 9px/1 var(--pix);color:var(--grape);margin-bottom:10px}
+.lore p{font:400 20px/1.25 var(--term);margin-bottom:10px}
+.lore p:last-child{margin-bottom:0}
+.ca-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 13px;
+  border:4px solid var(--ink);background:#fffdf6}
+.ca-row small{display:block;font:400 8px/1 var(--pix);color:var(--grape);margin-bottom:7px}
+.ca-row div{min-width:0;flex:1}
+.ca-val{font:400 19px/1.2 var(--term);word-break:break-all}
+.copy{padding:9px 13px;border:3px solid var(--ink);background:var(--lime);font:400 9px/1 var(--pix)}
+.copy:hover{background:var(--sun)}
+.links{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.links a{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 6px;
+  border:4px solid var(--ink);background:#fffdf6;font:400 9px/1 var(--pix);
+  box-shadow:3px 3px 0 var(--ink)}
+.links a:hover{background:var(--sun);transform:translate(1px,1px);box-shadow:2px 2px 0 var(--ink)}
+.links img{width:14px;height:14px}
+.exe{padding:13px;border:4px solid var(--ink);background:var(--cyan);color:#fff;
+  font:400 10px/1 var(--pix);text-shadow:2px 2px 0 var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.exe:hover{background:var(--grape)}
+
+/* ---------- taskbar ---------- */
+.task{position:fixed;left:0;right:0;bottom:0;z-index:20;height:56px;
+  display:flex;align-items:center;gap:12px;padding:0 12px;
+  background:var(--grape);border-top:4px solid var(--ink)}
+.task .start{padding:10px 12px;border:3px solid var(--ink);background:var(--lime);font:400 9px/1 var(--pix)}
+.task .start:hover{background:var(--sun)}
+.vol{display:flex;align-items:center;gap:8px;color:#fff;font:400 8px/1 var(--pix)}
+.vol input{width:96px;accent-color:var(--sun)}
+.marq{flex:1;height:32px;overflow:hidden;display:flex;align-items:center;
+  border:3px solid var(--ink);background:#2a1c0b}
+.marq div{display:flex;gap:34px;white-space:nowrap;padding-left:100%;
+  animation:marquee 26s linear infinite;font:400 9px/1 var(--pix);color:var(--sun)}
+@keyframes marquee{to{transform:translateX(-100%)}}
+
+/* ---------- popup windows ---------- */
+.pop{position:fixed;left:50%;top:50%;z-index:40;width:min(940px,94vw);max-height:86vh;
+  display:flex;flex-direction:column;opacity:0;visibility:hidden;
+  transform:translate(-50%,-50%) scale(.94);
+  transition:opacity .25s ease,transform .25s ease,visibility .25s}
+.pop.on{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+.pop-head{display:flex;align-items:center;padding:9px 10px;border-bottom:4px solid var(--ink);
+  background:linear-gradient(90deg,var(--cyan),var(--lime));font:400 11px/1 var(--pix)}
+.pop-head button{margin-left:auto;width:24px;height:21px;border:2px solid var(--ink);
+  background:#ff6a5a;font:400 9px/1 var(--pix)}
+.pop-body{padding:14px;overflow:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.grid figure{position:relative;border:4px solid var(--ink);background:#000;cursor:pointer}
+.grid img{width:100%;aspect-ratio:1;object-fit:cover}
+.grid figure:after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;
+  background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 4px)}
+.grid figcaption{position:absolute;left:0;right:0;bottom:0;padding:6px 8px;
+  background:#2a1c0bd9;color:#fff;font:400 15px/1.2 var(--term)}
+
+/* excuse machine popup */
+.mach-wrap{display:grid;grid-template-columns:minmax(220px,42%) 1fr;gap:18px;align-items:center}
+.mach{position:relative;width:100%;max-width:360px;margin:0 auto}
+.mach > img{width:100%}
+.screen{position:absolute;left:19.6%;top:16.2%;width:60.6%;height:37%;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;padding:6% 7%;
+  background:radial-gradient(120% 120% at 50% 30%,#1f4a26,#04120a 70%)}
+.screen:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(rgba(255,255,255,.07) 0 1px,transparent 1px 4px)}
+.screen p{font:400 16px/1.25 var(--term);color:#9dff8a;text-align:center;text-shadow:0 0 10px #6dff6a80}
+.hot{position:absolute;width:7.2%;aspect-ratio:1;top:57.3%;border-radius:50%;background:#0000;border:0}
+.hot:hover{box-shadow:0 0 0 4px #ffffff8c}
+.h1x{left:17.9%} .h2x{left:32.2%} .h3x{left:46.4%} .h4x{left:60.6%} .h5x{left:74.8%}
+.mach-copy p{font:400 21px/1.3 var(--term);margin-bottom:14px}
+.keys{display:flex;flex-wrap:wrap;gap:8px}
+.keys button{padding:10px 12px;border:3px solid var(--ink);background:#fffdf6;font:400 8px/1 var(--pix)}
+.keys button.on,.keys button:hover{background:var(--sun)}
+
+/* ---------- entry gate + cutscene ---------- */
+.gate{position:fixed;inset:0;z-index:90;display:grid;place-items:center;
+  background:radial-gradient(120% 120% at 50% 40%,#7fd4ff,#2f8fd4);
+  transition:opacity .5s ease,visibility .5s}
+.gate.gone{opacity:0;visibility:hidden;pointer-events:none}
+.enter{padding:22px 30px;border:5px solid var(--ink);box-shadow:8px 8px 0 var(--ink);
+  background:linear-gradient(90deg,var(--hot),var(--sun),var(--lime),var(--cyan));
+  background-size:300% 100%;animation:shift 5s linear infinite;
+  font:400 18px/1 var(--pix);color:#fff;text-shadow:3px 3px 0 var(--ink);letter-spacing:2px}
+.enter:hover{transform:translate(2px,2px);box-shadow:5px 5px 0 var(--ink)}
+.cut{position:fixed;inset:0;z-index:88;background:#000;opacity:0;visibility:hidden;
+  transition:opacity .5s ease,visibility .5s}
+.cut.on{opacity:1;visibility:visible}
+.cut img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;
+  transition:opacity .45s ease}
+.cut img.is-active{opacity:1}
+.cut-grade{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(rgba(0,0,0,.2) 0 1px,transparent 1px 4px)}
+.skip{position:absolute;right:22px;bottom:22px;z-index:3;padding:12px 16px;
+  border:4px solid var(--ink);background:var(--hot);color:#fff;
+  font:400 11px/1 var(--pix);text-shadow:2px 2px 0 var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.skip:hover{background:var(--sun);color:var(--ink);text-shadow:none}
+
+@media (max-width:900px){
+  html,body{overflow:auto}
+  .win{height:auto;max-height:none}
+  .desk{padding:10px 10px 66px;place-items:start center}
+  .win{height:auto}
+  .win-body{grid-template-columns:1fr;gap:14px}
+  .tv{aspect-ratio:4/3;flex:none}
+  .panel{overflow:visible}
+  .name{font-size:clamp(20px,7vw,34px)}
+  .lore{max-height:none}
+  .mach-wrap{grid-template-columns:1fr}
+  .task{height:50px;gap:8px;padding:0 8px}
+  .vol{display:none}
+  .memes-btn{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="desk">
+  <img class="wall" src="assets/field-bg.webp" alt="Sunny grass field wallpaper" />
+  <div class="wall-tint"></div>
+
+  <section class="win box" id="win">
+    <header class="bar-title">
+      <img src="assets/favicon.png" alt="" />
+      <span>Coper Cat</span>
+      <div class="dots">
+        <button id="minBtn" title="Minimise">_</button>
+        <button title="Maximise">[]</button>
+        <button id="closeBtn" title="Close">X</button>
+      </div>
+    </header>
+
+    <div class="win-body">
+      <div class="tv-col">
+        <div class="tv" id="tv">
+          <img id="tvImg" src="assets/meme-04.webp" alt="Coper Cat channel" />
+          <div class="tv-tag"><i>REC</i> COPE-TV<br />CH 01 . SUN . ALL FINE</div>
+          <div class="pal">
+            <i style="background:#fff"></i><i style="background:#ffd24a"></i>
+            <i style="background:#22b3d6"></i><i style="background:#5fd12f"></i>
+            <i style="background:#f2861c"></i>
+          </div>
+          <div class="crt"></div><div class="roll"></div>
+        </div>
+        <div class="tv-status">NOW SHOWING: <b id="tvCap">FOUNTAIN</b></div>
+        <button class="memes-btn" id="memesBtn">&gt; MEMES</button>
+        <div class="rail">
+          <small>&gt; SNEAK PEEK</small>
+          <div class="rail-strip" id="rail"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="path">&gt; C:\CoperCat</div>
+        <h1 class="name"><i>C</i><i>o</i><i>p</i><i>e</i><i>r</i> <i>C</i><i>a</i><i>t</i></h1>
+        <p class="tagline">everything is fine, i checked</p>
+
+        <div class="lore">
+          <h2>&gt; WHO IS COPER</h2>
+          <p>I bought the top, the shorts were on sale, and the weather app was wrong. None of that is on me.</p>
+          <p>I keep a reason ready for every single thing that happens. I have never once run out. That is the whole trick.</p>
+        </div>
+
+        <div class="ca-row ca">
+          <div><small>CONTRACT ADDRESS</small><span class="ca-val">soon</span></div>
+          <button class="copy">COPY</button>
+        </div>
+
+        <div class="links">
+          <a href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />BUY</a>
+          <a href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+          <a href="https://dexscreener.com/robinhood/"><img src="assets/ic-dex.png" alt="" />DEX</a>
+        </div>
+
+        <button class="exe" id="exeBtn">RUN EXCUSE.EXE</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="task">
+  <button class="start" id="taskWin">COPER CAT</button>
+  <button class="start" id="muteBtn">SOUND ON</button>
+  <div class="vol">VOL <input type="range" id="vol" min="0" max="100" value="55" aria-label="Volume" /></div>
+  <div class="marq"><div>
+    <span>EVERYTHING IS FINE ///</span><span>NOTHING TO SEE ///</span><span>SHORTS ALL YEAR ///</span>
+    <span>REASON READY ///</span><span>STILL FINE ///</span><span>EVERYTHING IS FINE ///</span>
+  </div></div>
+</div>
+
+<section class="pop box" id="popMemes">
+  <header class="pop-head"><span>MEMES.DIR</span><button data-close>X</button></header>
+  <div class="pop-body"><div class="grid" id="grid"></div></div>
+</section>
+
+<section class="pop box" id="popExe">
+  <header class="pop-head"><span>EXCUSE.EXE</span><button data-close>X</button></header>
+  <div class="pop-body">
+    <div class="mach-wrap">
+      <div class="mach">
+        <img src="assets/machine.webp" alt="Retro machine with a blank screen" />
+        <div class="screen"><p id="screenText">Press a button. Receive a reason.</p></div>
+        <button class="hot h1x" data-k="weather" title="Weather"></button>
+        <button class="hot h2x" data-k="market" title="Market"></button>
+        <button class="hot h3x" data-k="plans" title="Plans"></button>
+        <button class="hot h4x" data-k="health" title="Health"></button>
+        <button class="hot h5x" data-k="other" title="Other"></button>
+      </div>
+      <div class="mach-copy">
+        <p>Five buttons. Each one hands you something to say when the thing you did stops looking like a good idea.</p>
+        <div class="keys">
+          <button data-k="weather">WEATHER</button>
+          <button data-k="market">MARKET</button>
+          <button data-k="plans">PLANS</button>
+          <button data-k="health">HEALTH</button>
+          <button data-k="other">OTHER</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cut" id="cut">
+  <img src="assets/meme-04.webp" alt="The cat in a city fountain" />
+  <img src="assets/meme-06.webp" alt="The cat in the snow in swim shorts" />
+  <img src="assets/meme-05.webp" alt="The cat in an empty supermarket" />
+  <img src="assets/meme-02.webp" alt="The cat beside a dry sea bed" />
+  <img src="assets/ava.webp" alt="The cat in a green field" />
+  <div class="cut-grade"></div>
+  <button class="skip" id="skipBtn">SKIP &gt;&gt;</button>
+</div>
+
+<div class="gate" id="gate">
+  <button class="enter" id="enterBtn">CLICK TO ENTER</button>
+</div>
+
+<script>
+(function(){
+  var CHANNELS = [
+    {src:'assets/meme-04.webp', t:'assets/t-meme-04.webp', cap:'FOUNTAIN',    line:'the pool was closed so i improvised'},
+    {src:'assets/meme-01.webp', t:'assets/t-meme-01.webp', cap:'LIVING ROOM', line:'the sofa is not floating, it is just higher than usual'},
+    {src:'assets/meme-06.webp', t:'assets/t-meme-06.webp', cap:'WINTER',      line:'i dress for the season i have decided on'},
+    {src:'assets/meme-05.webp', t:'assets/t-meme-05.webp', cap:'SHOP',        line:'they were out of everything so i took the one thing'},
+    {src:'assets/meme-02.webp', t:'assets/t-meme-02.webp', cap:'SEASIDE',     line:'the sea moved. i still came'},
+    {src:'assets/meme-03.webp', t:'assets/t-meme-03.webp', cap:'BUS STOP',    line:'the timetable is a suggestion and i am patient'},
+    {src:'assets/ava.webp',     t:'assets/t-ava.webp',     cap:'THE FIELD',   line:'nothing has happened here today and that is on purpose'}
+  ];
+
+  var tv = document.getElementById('tv'), tvImg = document.getElementById('tvImg'),
+      tvCap = document.getElementById('tvCap'), rail = document.getElementById('rail'),
+      grid = document.getElementById('grid'), tag = tv.querySelector('.tv-tag');
+  var ch = 0, auto = null;
+
+  /* tiny synthesised blip, no audio files */
+  var actx = null, muted = false, vol = 0.55;
+  function blip(freq){
+    if(muted) return;
+    try{
+      if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'square'; o.frequency.value = freq || 220;
+      g.gain.value = 0.05 * vol;
+      o.connect(g); g.connect(actx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.09);
+      o.stop(actx.currentTime + 0.1);
+    }catch(e){}
+  }
+
+  function setChannel(i, quiet){
+    ch = (i + CHANNELS.length) % CHANNELS.length;
+    var c = CHANNELS[ch];
+    tvImg.style.opacity = '0';
+    setTimeout(function(){ tvImg.src = c.src; tvImg.style.opacity = '1'; }, 150);
+    tvCap.textContent = c.cap;
+    tag.innerHTML = '<i>REC</i> COPE-TV<br />CH 0' + (ch + 1) + ' . SUN . ALL FINE';
+    if(!quiet) blip(180 + ch * 40);
+  }
+  function startAuto(){
+    clearInterval(auto);
+    auto = setInterval(function(){ setChannel(ch + 1, true); }, 4200);
+  }
+
+  CHANNELS.forEach(function(c){ var pre = new Image(); pre.src = c.src; });
+
+  CHANNELS.forEach(function(c, i){
+    var im = new Image();
+    im.src = c.t; im.alt = c.cap; im.title = c.cap;
+    im.addEventListener('click', function(){ setChannel(i); startAuto(); });
+    rail.appendChild(im);
+
+    var fig = document.createElement('figure');
+    var big = new Image(); big.src = c.src; big.alt = c.line;
+    var cap = document.createElement('figcaption'); cap.textContent = c.line;
+    fig.appendChild(big); fig.appendChild(cap);
+    fig.addEventListener('click', function(){
+      setChannel(i); startAuto();
+      document.getElementById('popMemes').classList.remove('on');
+    });
+    grid.appendChild(fig);
+  });
+
+  tv.addEventListener('click', function(){ setChannel(ch + 1); startAuto(); });
+
+  /* windows */
+  document.getElementById('memesBtn').addEventListener('click', function(){
+    document.getElementById('popMemes').classList.add('on'); blip(320);
+  });
+  document.getElementById('exeBtn').addEventListener('click', function(){
+    document.getElementById('popExe').classList.add('on'); blip(320);
+  });
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ b.closest('.pop').classList.remove('on'); blip(140); });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.pop').forEach(function(p){ p.classList.remove('on'); });
+    }
+  });
+
+  var win = document.getElementById('win');
+  function toggleWin(){ win.classList.toggle('min'); blip(200); }
+  document.getElementById('minBtn').addEventListener('click', toggleWin);
+  document.getElementById('closeBtn').addEventListener('click', toggleWin);
+  document.getElementById('taskWin').addEventListener('click', toggleWin);
+
+  var muteBtn = document.getElementById('muteBtn');
+  muteBtn.addEventListener('click', function(){
+    muted = !muted;
+    muteBtn.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
+    if(!muted) blip(260);
+  });
+  document.getElementById('vol').addEventListener('input', function(e){ vol = e.target.value / 100; });
+
+  /* excuse machine */
+  var REASONS = {
+    weather: ['It is not raining. The car is being washed.',
+              'Cold builds character and I have plenty already.',
+              'You cannot get sunburnt through a cloud. Free skincare.'],
+    market:  ['This is not a drop. This is where it accumulates.',
+              'I am early. Everyone who is early looks wrong first.',
+              'Down only means it cannot go down from somewhere else.'],
+    plans:   ['They cancelled. Good. I was going to cancel at nine.',
+              'I did not want to go and now I do not have to explain why.',
+              'Staying in is a plan. It has a location and a time.'],
+    health:  ['Walking to the fridge is cardio if you go twice.',
+              'Sleeping late is charging on a slower cable.',
+              'One vegetable a week is a routine.'],
+    other:   ['I meant to do that. All of it. In that order.',
+              'It is not broken, it is in its early access period.',
+              'Nobody saw it, so technically it did not count.']
+  };
+  var screenText = document.getElementById('screenText'), pick = {};
+  document.querySelectorAll('[data-k]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k = b.getAttribute('data-k'), list = REASONS[k];
+      var i = (pick[k] || 0) % list.length; pick[k] = i + 1;
+      screenText.textContent = list[i];
+      blip(300 + i * 30);
+      document.querySelectorAll('.keys button').forEach(function(x){
+        x.classList.toggle('on', x.getAttribute('data-k') === k);
+      });
+    });
+  });
+
+  /* gate -> cutscene -> desktop */
+  var gate = document.getElementById('gate'), cut = document.getElementById('cut');
+  var frames = cut.querySelectorAll('img'), timers = [];
+  function endCut(){
+    timers.forEach(clearTimeout); timers = [];
+    cut.classList.remove('on');
+    startAuto();
+  }
+  document.getElementById('skipBtn').addEventListener('click', endCut);
+  document.getElementById('enterBtn').addEventListener('click', function(){
+    gate.classList.add('gone');
+    cut.classList.add('on');
+    blip(420);
+    frames.forEach(function(f, i){
+      timers.push(setTimeout(function(){
+        frames.forEach(function(x){ x.classList.remove('is-active'); });
+        f.classList.add('is-active');
+        blip(150 + i * 25);
+      }, 120 + 760 * i));
+    });
+    timers.push(setTimeout(endCut, 120 + 760 * frames.length + 300));
+  });
+
+  setChannel(0, true);
+})();
+</script>
+</body>
+</html>
