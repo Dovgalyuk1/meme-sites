@@ -5,3 +5,4 @@ __pycache__/
 .vercel/
 shots/
 claude/refs/*/mirror/
+claude/inbox/*.html

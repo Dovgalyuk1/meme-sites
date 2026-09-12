@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-/* Разбор референсных сайтов серии — качает копию и снимает с неё всё, что нужно.
+/* Разбор референсных сайтов серии — берёт копию и снимает с неё всё, что нужно.
  *
- *   node tools/refs.js                 — все домены из tools/refs.txt
- *   node tools/refs.js sulky.fun ...   — только указанные
+ *   node tools/refs.js                 — всё из claude/inbox/ и из tools/refs.txt
+ *   node tools/refs.js sulky.fun       — конкретный домен
+ *   node tools/refs.js kapy.html       — сохранённая страница с диска
+ *
+ * Два источника, оба равноправны. Домен качается целиком через curl. Файл,
+ * сохранённый Олегом из браузера (Cmd+S, «только HTML»), просто кладётся в
+ * claude/inbox/ — картинок в нём нет, всё остальное есть.
  *
  * Кладёт в claude/refs/<имя>/: index.html и assets/ (локальная копия сайта),
  * desk.png (1440) и mob.png (390), facts.json — машинный разбор структуры.
@@ -27,17 +32,33 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'claude', 'refs');
 const PORT = 8913;
 
+const INBOX = path.join(ROOT, 'claude', 'inbox');
+
 function sites() {
   const args = process.argv.slice(2).filter(Boolean);
   if (args.length) return args;
+  const out = [];
+  if (fs.existsSync(INBOX)) {
+    out.push(...fs.readdirSync(INBOX).filter(f => /\.html?$/i.test(f))
+      .map(f => path.join(INBOX, f)));
+  }
   const list = path.join(__dirname, 'refs.txt');
-  if (!fs.existsSync(list)) throw new Error('нет tools/refs.txt и не переданы домены');
-  return fs.readFileSync(list, 'utf8').split('\n').map(s => s.trim())
-    .filter(s => s && !s.startsWith('#'));
+  if (fs.existsSync(list)) {
+    out.push(...fs.readFileSync(list, 'utf8').split('\n').map(s => s.trim())
+      .filter(s => s && !s.startsWith('#')));
+  }
+  if (!out.length) throw new Error('пусто: ни файлов в claude/inbox/, ни доменов в tools/refs.txt');
+  return out;
 }
 
+const isFile = s => !/^https?:/.test(s) && /\.html?$/i.test(s) && fs.existsSync(s);
+
 const norm = u => (/^https?:/.test(u) ? u : 'https://' + u);
-const nameOf = u => norm(u).replace(/^https?:\/\//, '').replace(/\/.*$/, '').split('.')[0];
+/* Имя папки — только латиница: файл может прийти с кириллицей в названии. */
+const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'ref';
+const nameOf = s => isFile(s)
+  ? slug(path.basename(s).replace(/\.html?$/i, ''))
+  : slug(norm(s).replace(/^https?:\/\//, '').replace(/\/.*$/, '').split('.')[0]);
 
 function curl(url, outFile) {
   const args = ['-sSL', '--max-time', '60', '-A', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36'];
@@ -64,10 +85,18 @@ function assetUrls(html) {
   return [...found];
 }
 
-function mirror(url, dir) {
-  const page = norm(url);
+function mirror(src, dir) {
   fs.mkdirSync(path.join(dir, 'mirror'), { recursive: true });
   const htmlFile = path.join(dir, 'mirror', 'index.html');
+
+  /* Сохранённая страница: копируем как есть, ассеты подтягивать неоткуда. */
+  if (isFile(src)) {
+    fs.copyFileSync(src, htmlFile);
+    return { source: path.relative(ROOT, src), assets: 0, assetsMissed: 0,
+             bytes: fs.statSync(htmlFile).size };
+  }
+
+  const page = norm(src);
   const code = curl(page, htmlFile);
   if (!/^2/.test(String(code).trim())) throw new Error('сайт ответил HTTP ' + code);
   let html = fs.readFileSync(htmlFile, 'utf8');
@@ -88,7 +117,7 @@ function mirror(url, dir) {
     html = html.split(raw).join(local);
   }
   fs.writeFileSync(htmlFile, html);
-  return { assets: ok, assetsMissed: miss, bytes: Buffer.byteLength(html) };
+  return { source: page, assets: ok, assetsMissed: miss, bytes: Buffer.byteLength(html) };
 }
 
 /* Всё, что интересно знать о чужом сайте серии, снимаем внутри страницы. */
@@ -186,6 +215,79 @@ async function shoot(browser, url, dir, facts) {
   await ctx.close();
 }
 
+/* Болванка разбора: машинная часть заполнена, человеческая — пустая.
+   Дальше её дописывает Claude, посмотрев на скриншоты глазами. Готовый
+   разбор не перезаписываем никогда. */
+function skeleton(f, dir) {
+  const file = path.join(dir, 'разбор.md');
+  if (fs.existsSync(file)) return false;
+  const on = Object.keys(f.tricks).filter(k => f.tricks[k]);
+  const off = Object.keys(f.tricks).filter(k => !f.tricks[k]);
+  const L = [];
+  L.push('# ' + f.name + ' — ' + (f.title || 'без title'));
+  L.push('');
+  L.push('Источник: ' + (f.url || f.source) + '  ');
+  L.push('Снято: ' + new Date().toISOString().slice(0, 10));
+  L.push('');
+  L.push('## Что это');
+  L.push('');
+  L.push('<!-- Персонаж, в чём суть монеты, понятно ли это с первого экрана. -->');
+  L.push('');
+  L.push('## Архетип');
+  L.push('');
+  L.push('<!-- A постер / B фейковая ОС / C картридж / D скролл-стори / E 3D.');
+  L.push('     Если ни один не подходит — описать новый. -->');
+  L.push('');
+  L.push('## Мини-игра');
+  L.push('');
+  L.push('<!-- Механика, сколько шагов, видно ли её с первого экрана, что за награда. -->');
+  L.push('');
+  L.push('Следы в тексте: ' + (f.game.progressLike.join(' ') || 'счётчика не видно') +
+         ' · ' + (f.game.keywords.join(' ') || '—'));
+  L.push('');
+  L.push('## Оформление');
+  L.push('');
+  L.push('<!-- Палитра, шрифты, чем держится настроение, что украсть. -->');
+  L.push('');
+  L.push('Шрифты: ' + (f.fonts.slice(0, 5).join(' · ') || '—'));
+  L.push('');
+  L.push('Палитра: ' + (f.palette.slice(0, 12).join(' ') || '—'));
+  L.push('');
+  L.push('## Копирайтинг');
+  L.push('');
+  L.push('<!-- Голос персонажа, длина реплик, микро-статусы. Выписать 2-3 лучшие строки. -->');
+  L.push('');
+  L.push('## Что забрать в свои сайты');
+  L.push('');
+  L.push('<!-- Конкретные приёмы. Это главная часть файла. -->');
+  L.push('');
+  L.push('## Что не повторять');
+  L.push('');
+  L.push('<!-- Занятая механика, занятая тема музыки, слабые места. -->');
+  L.push('');
+  L.push('## Машинная часть');
+  L.push('');
+  L.push('| | |');
+  L.push('|---|---|');
+  L.push('| вес | html ' + (f.size.html / 1024).toFixed(1) + ' KB · js ' +
+         (f.size.inlineJs / 1024).toFixed(1) + ' KB · css ' + (f.size.inlineCss / 1024).toFixed(1) + ' KB |');
+  L.push('| высота страницы | ' + f.scrollHeight + ' px |');
+  L.push('| мобильный оверфлоу | ' + f.mobileOverflow + ' |');
+  L.push('| внешние скрипты | ' + (f.external.scripts.join(', ') || 'нет') + ' |');
+  L.push('| есть | ' + on.join(', ') + ' |');
+  L.push('| нет | ' + off.join(', ') + ' |');
+  L.push('| соцсети | ' + (f.socials.join(' ') || 'нет') + ' |');
+  L.push('');
+  L.push('Заголовки: ' + (f.headings.map(h => h.text).join(' · ') || '—'));
+  L.push('');
+  L.push('Кнопки: ' + (f.buttons.join(' · ') || '—'));
+  L.push('');
+  L.push('Скриншоты рядом: `desk.png` (1440), `mob.png` (390). Полный дамп — `facts.json`.');
+  L.push('');
+  fs.writeFileSync(file, L.join('\n'));
+  return true;
+}
+
 function report(f) {
   const on = Object.keys(f.tricks).filter(k => f.tricks[k]);
   console.log('\n=== ' + f.url + ' — ' + f.title);
@@ -216,10 +318,13 @@ function report(f) {
     try {
       fs.mkdirSync(dir, { recursive: true });
       const m = mirror(s, dir);
-      const facts = { url: norm(s), name: n, ...m };
+      const facts = { name: n, url: isFile(s) ? null : norm(s), ...m };
       await shoot(browser, 'http://127.0.0.1:' + PORT + '/' + n + '/mirror/index.html', dir, facts);
       fs.writeFileSync(path.join(dir, 'facts.json'), JSON.stringify(facts, null, 2));
-      report(facts); done.push(facts);
+      const fresh = skeleton(facts, dir);
+      report(facts);
+      console.log('  разбор: claude/refs/' + n + '/разбор.md' + (fresh ? ' (болванка, дописать глазами)' : ' (уже есть, не трогал)'));
+      done.push(facts);
     } catch (e) {
       const msg = String(e.message || e).split('\n')[0];
       const blocked = /403|CONNECT|tunnel|curl: \(56\)|curl: \(35\)/i.test(msg);
