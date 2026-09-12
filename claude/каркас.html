@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  /* SETTINGS - всё меняется здесь, наверху, в ОДНОМ месте */
+  window.CONTRACT = "";                      /* адрес контракта. пусто = "soon" */
+  window.TWITTER  = "https://x.com/HANDLE";  /* ссылка на X */
+  window.BUY_URL  = "";                      /* только если покупка НЕ через лаунчпад */
+  document.addEventListener('DOMContentLoaded', function(){
+    var CA = (window.CONTRACT || "").trim(),
+        TW = (window.TWITTER  || "").trim(),
+        BUY= (window.BUY_URL  || "").trim();
+    document.querySelectorAll('a[href]').forEach(function(a){
+      var h = a.getAttribute('href') || "";
+      if(h.indexOf('ponsfamily.com')>-1){ if(BUY) a.href=BUY; else if(CA) a.href='https://www.ponsfamily.com/launchpad/'+CA; }
+      else if(h.indexOf('dexscreener')>-1){ if(CA) a.href='https://dexscreener.com/robinhood/'+CA; }
+      else if(h.indexOf('x.com')>-1 || h.indexOf('twitter.com')>-1){ if(TW) a.href=TW; }
+    });
+    if(CA){
+      document.querySelectorAll('.ca b, .ca-val').forEach(function(b){ b.textContent=CA; });
+      document.querySelectorAll('.ca, .ca-row').forEach(function(el){
+        el.title=CA; el.style.cursor='pointer';
+        el.addEventListener('click', function(){
+          if(!navigator.clipboard) return;
+          navigator.clipboard.writeText(CA);
+          var b=el.querySelector('b'); if(!b) return;
+          var old=b.textContent; b.textContent='copied';
+          setTimeout(function(){ b.textContent=old; }, 1200);
+        });
+      });
+    }
+  });
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NAME</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/favicon.png" />
+<meta name="description" content="реплика персонажа от первого лица" />
+
+<!-- чего нет ни у одного референса: превью при репосте в X -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="NAME" />
+<meta property="og:description" content="реплика персонажа от первого лица" />
+<meta property="og:image" content="https://ИМЯ.vercel.app/assets/og.jpg" />
+<meta property="og:url" content="https://ИМЯ.vercel.app/" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DISPLAY&family=MONO&display=swap" rel="stylesheet" />
+<style>
+:root{
+  /* 8-11 переменных, имена по смыслу, не по номеру */
+  --sky:#2f8ede; --grass:#63b52a; --cream:#fdf6e2; --ink:#181410; --ember:#ff7a1a;
+  --disp:"DISPLAY", system-ui, sans-serif;
+  --mono:"MONO", ui-monospace, monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:#0b1622; color:var(--cream); font-family:var(--mono); overflow:hidden}
+
+/* ---------- гейт: даёт право на autoplay и снимает размытие ---------- */
+#gate{position:fixed; inset:0; z-index:80; display:grid; place-items:center;
+  background:rgba(8,18,30,.52); backdrop-filter:blur(3px);
+  transition:opacity .7s ease, visibility .7s ease}
+#gate.is-gone{opacity:0; visibility:hidden; pointer-events:none}
+#gate button{font-family:var(--mono); font-weight:700; font-size:13px; letter-spacing:.34em;
+  color:var(--cream); background:transparent; cursor:pointer;
+  border:1px solid rgba(253,246,226,.7); padding:20px 46px 20px 50px;
+  transition:background .25s, letter-spacing .25s, color .25s}
+#gate button:hover{background:var(--cream); color:var(--ink); letter-spacing:.42em}
+
+/* ---------- сцена 16:9, шире вьюпорта ---------- */
+.stage{position:fixed; inset:0; overflow:hidden; isolation:isolate}
+.frame{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:2;
+  width:max(100vw,177.8vh); height:max(56.25vw,100vh);
+  filter:blur(16px) saturate(.7) brightness(.72); transition:filter 1.1s ease .15s}
+body.is-open .frame{filter:none}
+.frame > *{position:absolute}
+.bg{inset:0; width:100%; height:100%; object-fit:cover}
+
+/* имя: обводка псевдоэлементом снизу + ступенчатая тень */
+.name{left:50%; top:45%; transform:translate(-50%,-50%); z-index:2;
+  font-family:var(--disp); line-height:.82; font-size:min(22vw,31vh); white-space:nowrap;
+  filter:drop-shadow(0 9px 0 #b98a2c) drop-shadow(0 17px 0 #7d5a18) drop-shadow(0 26px 30px rgba(8,22,38,.5))}
+.name span{display:block; position:relative; z-index:1;
+  background:linear-gradient(#fffdf4 36%, #ffe6a0 58%, #eaa92c 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.name:before{content:"NAME"; position:absolute; left:0; top:0; color:var(--ink);
+  -webkit-text-stroke:14px var(--ink)}
+
+.hero-cut{left:50%; bottom:-2%; width:25%; transform:translateX(-50%); z-index:4;
+  filter:drop-shadow(0 26px 26px rgba(20,40,10,.4))}
+
+/* ---------- HUD по краям, навбара нет ---------- */
+.hud{position:fixed; inset:0; z-index:10; pointer-events:none; opacity:0; transition:opacity .8s ease .35s}
+body.is-open .hud{opacity:1}
+.hud a, .hud button, .hud .ca{pointer-events:auto}
+.links{position:absolute; left:26px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:10px}
+.links a{display:flex; align-items:center; gap:9px; text-decoration:none;
+  font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--ink);
+  background:var(--cream); border:2px solid var(--ink); padding:9px 15px;
+  box-shadow:4px 4px 0 rgba(20,25,15,.45); transition:transform .16s, box-shadow .16s}
+.links a:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(20,25,15,.5)}
+.links a:active{transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(20,25,15,.5)}
+.links img{width:13px; height:13px; display:block}
+.lede{position:absolute; left:50%; transform:translateX(-50%); top:22px; font-size:12px; letter-spacing:.12em;
+  background:rgba(11,26,44,.42); padding:8px 16px; backdrop-filter:blur(3px)}
+.memes-btn{position:absolute; right:26px; bottom:26px; cursor:pointer;
+  font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.22em;
+  color:var(--ink); background:#ffe27a; border:2px solid var(--ink); padding:11px 20px;
+  box-shadow:4px 4px 0 rgba(20,25,15,.45); transition:transform .16s, box-shadow .16s}
+.memes-btn:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(20,25,15,.5)}
+.ca{position:absolute; left:26px; bottom:26px; max-width:min(60vw,520px);
+  font-size:11px; background:rgba(16,34,12,.72); border-left:3px solid #8fe04a;
+  padding:10px 15px; backdrop-filter:blur(4px)}
+.ca span{opacity:.6; letter-spacing:.2em; font-weight:700}
+.ca b{font-weight:700; word-break:break-all}
+
+/* ---------- окно с мемами ---------- */
+.win{position:fixed; z-index:60; left:50%; top:50%; transform:translate(-50%,-50%) scale(.96);
+  width:min(92vw,760px); background:#d9d5c4; border:1px solid #000;
+  box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 #8a8f96, 8px 10px 0 rgba(0,0,0,.45);
+  opacity:0; visibility:hidden; transition:opacity .28s, visibility .28s, transform .28s}
+.win.is-on{opacity:1; visibility:visible; transform:translate(-50%,-50%) scale(1)}
+.winbar{display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(#3f8fe0,#1b5fb4); color:#fff; padding:6px 8px 6px 12px;
+  font-size:11px; font-weight:700; letter-spacing:.18em}
+.winbar button{width:20px; height:18px; cursor:pointer; background:#d9d5c4; color:#000;
+  border:1px solid #000; box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 #8a8f96; font-family:var(--mono)}
+.wingrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px}
+.wingrid button{padding:0; border:0; background:none; cursor:pointer; min-width:0}
+.wingrid img{width:100%; aspect-ratio:1; object-fit:cover; display:block;
+  border:1px solid #000; transition:transform .18s}
+.wingrid img:hover{transform:scale(1.04)}
+
+/* ---------- лайтбокс с подписью и стрелками ---------- */
+.lb{position:fixed; inset:0; z-index:70; background:rgba(6,12,20,.86); display:grid; place-items:center;
+  padding:5vh 5vw; opacity:0; visibility:hidden; transition:opacity .25s, visibility .25s}
+.lb.on{opacity:1; visibility:visible}
+.lb .frame{position:relative; left:auto; top:auto; transform:none; width:auto; height:auto; filter:none}
+.lb img{max-width:min(88vw,760px); max-height:78vh; display:block; border:3px solid var(--cream)}
+.lb .cap{margin-top:10px; font-size:11px; letter-spacing:.08em; opacity:.75; text-align:center}
+.lb button{position:absolute; cursor:pointer; background:var(--cream); color:var(--ink);
+  border:2px solid var(--ink); font-family:var(--mono); font-weight:700; padding:8px 14px}
+.lb .x{right:-8px; top:-46px} .lb .p{left:-8px; bottom:-46px} .lb .n{right:-8px; bottom:-46px}
+
+/* ---------- плёнки поверх всего ---------- */
+.grain{position:fixed; inset:0; z-index:50; pointer-events:none; mix-blend-mode:multiply; opacity:.55;
+  background:repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.09) 3px 4px)}
+.vig{position:fixed; inset:0; z-index:49; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 52%, rgba(6,14,24,.5) 100%)}
+
+@media (max-width:860px){
+  /* кадр 16:9 шире портретного экрана - слои переезжают в видимую полосу,
+     проценты персонажа и пропов пересчитываются, а не наследуются */
+  .name{font-size:min(15.5vw,13vh); top:41%}
+  .hero-cut{width:11.5%; bottom:2%}
+  .links{left:12px; top:auto; bottom:92px; transform:none; flex-direction:row; flex-wrap:wrap; gap:7px}
+  .links a{padding:8px 12px; font-size:10px}
+  .ca{left:12px; right:12px; bottom:12px; max-width:none}
+  .memes-btn{right:12px; top:56px; bottom:auto}
+  .lede{font-size:10px; top:56px; width:82vw; text-align:center}
+  .wingrid{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+  .frame{filter:none}
+}
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <div class="frame">
+    <img class="bg" src="assets/bg.webp" alt="описание сцены как часть лора" />
+    <h1 class="name"><span>NAME</span></h1>
+    <img class="hero-cut" src="assets/cut-stand.webp" alt="персонаж стоит в кадре" />
+  </div>
+</main>
+
+<div class="hud">
+  <p class="lede">реплика персонажа от первого лица</p>
+  <nav class="links">
+    <a href="https://www.ponsfamily.com/launchpad"><img src="assets/ic-pons.png" alt="" />Buy</a>
+    <a href="https://x.com"><img src="assets/ic-x.png" alt="" />X</a>
+    <a href="https://dexscreener.com/robinhood/"><img src="assets/ic-dex.png" alt="" />Chart</a>
+  </nav>
+  <button class="memes-btn" id="open-memes">MEMES</button>
+  <div class="ca"><span>CA</span> <b>soon</b></div>
+</div>
+
+<div class="win" id="memes">
+  <div class="winbar">NAME.DIR <button id="close-memes" aria-label="Закрыть">x</button></div>
+  <div class="wingrid" id="grid">
+    <button type="button" data-i="0"><img src="assets/m1.webp" alt="подпись как часть лора" loading="lazy" /></button>
+    <button type="button" data-i="1"><img src="assets/m2.webp" alt="подпись как часть лора" loading="lazy" /></button>
+    <button type="button" data-i="2"><img src="assets/m3.webp" alt="подпись как часть лора" loading="lazy" /></button>
+    <button type="button" data-i="3"><img src="assets/m4.webp" alt="подпись как часть лора" loading="lazy" /></button>
+  </div>
+</div>
+
+<div class="lb" id="lb">
+  <div class="frame">
+    <img id="lbimg" src="" alt="" />
+    <div class="cap" id="lbcap"></div>
+    <button class="x" id="lbx" aria-label="Закрыть">&#10005;</button>
+    <button class="p" id="lbp" aria-label="Предыдущая">&#9664;</button>
+    <button class="n" id="lbn" aria-label="Следующая">&#9654;</button>
+  </div>
+</div>
+
+<div class="grain"></div>
+<div class="vig"></div>
+<div id="gate"><button id="enter">ENTER</button></div>
+
+<script>
+(function(){
+  /* гейт */
+  var gate=document.getElementById('gate');
+  document.getElementById('enter').addEventListener('click', function(){
+    gate.classList.add('is-gone');
+    document.body.classList.add('is-open');
+  });
+
+  /* окно мемов */
+  var win=document.getElementById('memes');
+  document.getElementById('open-memes').addEventListener('click', function(){ win.classList.add('is-on'); });
+  document.getElementById('close-memes').addEventListener('click', function(){ win.classList.remove('is-on'); });
+
+  /* лайтбокс: массив [src, подпись-как-лор] */
+  var shots=[
+    ['assets/m1.webp','подпись как часть лора'],
+    ['assets/m2.webp','подпись как часть лора'],
+    ['assets/m3.webp','подпись как часть лора'],
+    ['assets/m4.webp','подпись как часть лора']
+  ];
+  var lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg'),
+      lbcap=document.getElementById('lbcap'), at=0;
+  function show(i){
+    at=(i+shots.length)%shots.length;
+    lbimg.src=shots[at][0]; lbimg.alt=shots[at][1]; lbcap.textContent=shots[at][1];
+    lb.classList.add('on');
+  }
+  function hide(){ lb.classList.remove('on'); }
+  document.getElementById('lbx').addEventListener('click', hide);
+  document.getElementById('lbp').addEventListener('click', function(){ show(at-1); });
+  document.getElementById('lbn').addEventListener('click', function(){ show(at+1); });
+  lb.addEventListener('click', function(e){ if(e.target===lb || e.target.className==='frame') hide(); });
+  document.getElementById('grid').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    show(parseInt(b.getAttribute('data-i'),10)||0);
+  });
+  document.addEventListener('keydown', function(e){
+    if(lb.classList.contains('on')){
+      if(e.key==='Escape') hide();
+      if(e.key==='ArrowLeft') show(at-1);
+      if(e.key==='ArrowRight') show(at+1);
+      return;
+    }
+    if(e.key==='Escape') win.classList.remove('is-on');
+  });
+})();
+</script>
+</body>
+</html>
