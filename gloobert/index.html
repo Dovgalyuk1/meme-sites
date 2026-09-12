@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GLOOBERT</title>
+<meta name="description" content="i keep ending up places. nobody tells me why.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GLOOBERT · $GLOOB">
+<meta property="og:description" content="i keep ending up places. nobody tells me why.">
+<meta property="og:image" content="assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GLOOBERT · $GLOOB">
+<meta name="twitter:description" content="i keep ending up places. nobody tells me why.">
+<meta name="twitter:image" content="assets/og.png">
+<meta name="theme-color" content="#f6ecd8">
+<link rel="icon" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script>
+/* ======================= SETTINGS ======================= */
+window.CONTRACT = "";                    /* адрес контракта, пусто = soon   */
+window.TWITTER  = "";                    /* ссылка на X                     */
+window.BUY_URL  = "";                    /* прямая ссылка на покупку;       */
+                                         /* пусто + есть CONTRACT = лаунчпад */
+/* ======================================================== */
+</script>
+
+<style>
+:root{
+  --ink:#1b1a17; --cream:#f6ecd8; --ginger:#e28b3c; --rust:#b5641f;
+  --fur:#f8f3e9; --mint:#dfe3a2; --pupil:#0f6b43; --lip:#e08b84;
+  --leaf:#3fa14a; --grape:#7a49c8; --sun:#f4b830; --night:#232a4a;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--cream); color:var(--ink); overflow-x:clip;
+  font:400 15px/1.62 "Martian Mono",ui-monospace,monospace; letter-spacing:-.02em;
+}
+h1,h2,h3,.disp{font:400 1em/1 "Titan One",system-ui,sans-serif; letter-spacing:.01em; margin:0}
+a{color:inherit}
+img,svg{display:block}
+
+/* ---------- плёнки ---------- */
+.film{position:fixed; inset:0; pointer-events:none; z-index:90}
+.scan{background:repeating-linear-gradient(rgba(0,0,0,.16) 0 1px,transparent 1px 3px); mix-blend-mode:multiply; opacity:.5}
+.grain{background-image:radial-gradient(rgba(255,255,255,.6) .5px,transparent .6px); background-size:3px 3px; mix-blend-mode:overlay; opacity:.2}
+.vig{background:radial-gradient(ellipse at 50% 42%, #0000 55%, rgba(27,26,23,.34) 100%)}
+
+/* ---------- гейт ---------- */
+#gate{position:fixed; inset:0; z-index:200; display:grid; place-items:center; background:var(--night);
+  color:var(--fur); text-align:center; padding:24px; cursor:pointer}
+#gate.off{opacity:0; pointer-events:none; transition:opacity .7s}
+#gate .gcat{width:min(230px,44vw); margin:0 auto 18px; animation:bob 2.4s ease-in-out infinite alternate}
+#gate b{display:block; font:400 clamp(30px,7vw,54px)/1 "Titan One",sans-serif; color:var(--sun)}
+#gate small{display:block; margin-top:14px; font-size:12px; opacity:.7; letter-spacing:.12em}
+body.locked{overflow:hidden}
+
+/* ---------- шапка ---------- */
+.bar{position:sticky; top:0; z-index:80; display:flex; align-items:stretch;
+  background:var(--ink); color:var(--cream); border-bottom:3px solid var(--ink)}
+.mq{flex:1; overflow:hidden; min-width:0; display:flex; align-items:center}
+.mq span{white-space:nowrap; font-size:11px; letter-spacing:.22em; animation:mq 26s linear infinite; padding-left:100%}
+.snd{display:flex; gap:0; flex:none}
+.snd button{font:700 11px/1 "Martian Mono",monospace; letter-spacing:.1em; color:var(--cream);
+  background:#2c2a25; border:0; border-left:3px solid var(--cream); padding:11px 12px; cursor:pointer}
+.snd button[aria-pressed="true"]{background:var(--sun); color:var(--ink)}
+
+/* ---------- общие блоки ---------- */
+section{padding:clamp(34px,6vw,78px) clamp(14px,4vw,46px); border-bottom:4px solid var(--ink)}
+.wrap{max-width:1180px; margin:0 auto}
+.kick{font-size:11px; letter-spacing:.24em; opacity:.75}
+h2{font-size:clamp(28px,5.4vw,54px); line-height:.94}
+.lede{max-width:56ch; margin:12px 0 0}
+
+/* ---------- кнопки ---------- */
+.btn{display:inline-flex; align-items:center; gap:8px; text-decoration:none; cursor:pointer;
+  font:400 14px/1 "Titan One",sans-serif; letter-spacing:.02em; padding:14px 20px;
+  background:var(--sun); color:var(--ink); border:3px solid var(--ink); box-shadow:0 5px 0 var(--ink)}
+.btn:hover{transform:translateY(-2px); box-shadow:0 7px 0 var(--ink)}
+.btn:active{transform:translateY(3px); box-shadow:0 2px 0 var(--ink)}
+.btn.alt{background:var(--fur)}
+.btn.go{background:var(--leaf); color:var(--fur)}
+.btn.soon{background:#cfc6b4; color:#6c655a; cursor:not-allowed}
+.btn.soon:after{content:"soon"; font:700 10px/1 "Martian Mono",monospace; opacity:.8}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(180deg,#ffd97a 0%,var(--sun) 46%,#eba52c 100%); position:relative; overflow:hidden}
+.hero:before{content:""; position:absolute; inset:0;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.24) 0 26px,transparent 26px 74px); pointer-events:none}
+.hero-in{position:relative; display:grid; grid-template-columns:1.08fr .92fr; gap:clamp(18px,3.4vw,54px); align-items:center}
+.hero-in>div{min-width:0}
+.mark{position:relative; margin:6px 0 2px; font:400 clamp(54px,12.4vw,152px)/.84 "Titan One",sans-serif;
+  background:linear-gradient(#fffdf4 34%,#ffd98d 60%,var(--ginger) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  -webkit-text-stroke:7px var(--ink); paint-order:stroke fill;
+  filter:drop-shadow(0 8px 0 var(--rust)) drop-shadow(0 15px 0 #6d3a0f)}
+.tick{display:inline-block; margin-top:14px; background:var(--ink); color:var(--sun);
+  font:700 12px/1 "Martian Mono",monospace; letter-spacing:.16em; padding:8px 12px}
+.slog{font:400 clamp(17px,2.5vw,27px)/1.22 "Titan One",sans-serif; margin:16px 0 0; max-width:19ch}
+.lore{max-width:46ch; margin:14px 0 0; font-size:14px}
+.cta{display:flex; flex-wrap:wrap; gap:12px; margin-top:22px}
+.ca{display:inline-flex; align-items:center; gap:10px; margin-top:18px; background:rgba(27,26,23,.9); color:var(--fur);
+  border:3px solid var(--ink); padding:9px 13px; font-size:12px; letter-spacing:.06em; cursor:pointer}
+.ca b{font-weight:700; color:var(--sun)}
+
+/* портрет */
+.port{position:relative; display:grid; place-items:center}
+.port .plate{position:absolute; inset:auto 0 4% 0; height:16%; background:rgba(27,26,23,.18); border-radius:50%; filter:blur(6px)}
+.port .cat{width:min(100%,430px); cursor:pointer; animation:bob 3.2s ease-in-out infinite alternate}
+.port .cat:active{transform:scale(.97)}
+.poke{position:absolute; top:4%; right:0; background:var(--grape); color:var(--fur); border:3px solid var(--ink);
+  box-shadow:4px 4px 0 rgba(27,26,23,.5); padding:9px 12px; font-size:11px; letter-spacing:.08em;
+  transform:rotate(6deg); pointer-events:none}
+#drop{position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:3}
+.coin{position:absolute; width:26px; height:26px; border-radius:50%; border:3px solid var(--ink);
+  background:radial-gradient(circle at 34% 30%,#fff3c4,var(--sun) 58%,#c98a12); pointer-events:none}
+.coin:after{content:""; position:absolute; inset:5px; border-radius:50%; border:2px solid rgba(27,26,23,.35)}
+
+/* ---------- игра ---------- */
+#game{background:var(--night); color:var(--fur)}
+#game h2{color:var(--sun)}
+.gwrap{display:grid; grid-template-columns:1.5fr 1fr; gap:22px; margin-top:26px; align-items:start}
+.gwrap>*{min-width:0}
+.stage{position:relative; aspect-ratio:16/10; border:4px solid var(--ink); overflow:hidden;
+  background:var(--night); box-shadow:0 8px 0 rgba(0,0,0,.45); touch-action:none; user-select:none}
+.sc{position:absolute; inset:0; background:var(--bg,#3f9b4a); overflow:hidden}
+.sc .fl{position:absolute; left:0; right:0; bottom:0; height:26%; background:var(--fl,#2b6f36); border-top:3px solid rgba(27,26,23,.4)}
+.sc .po{position:absolute; top:7%; left:5%; max-width:34%; background:var(--fur); color:var(--ink);
+  border:3px solid var(--ink); padding:6px 8px; font:700 9px/1.25 "Martian Mono",monospace; letter-spacing:.05em}
+.sc .po.r{left:auto; right:5%}
+.sc .pr{position:absolute; bottom:6%; left:7%}
+.sc .sit{position:absolute; bottom:3%; left:50%; width:41%; transform:translateX(-50%)}
+/* пропы: каждая ситуация узнаётся по одному предмету */
+.sc .p-bowl{width:18%; height:11%; bottom:3%; left:6%; background:#b9bcc2; border:3px solid var(--ink); border-radius:0 0 46% 46%/0 0 96% 96%}
+.sc .p-bowl:after{content:"CAT"; position:absolute; inset:auto 0 16% 0; text-align:center; font:700 7px/1 "Martian Mono",monospace; color:#41454c}
+.sc .p-laptop{width:22%; height:5%; bottom:5%; left:6%; background:#31353c; border:3px solid var(--ink)}
+.sc .p-laptop:after{content:""; position:absolute; left:8%; right:8%; bottom:92%; height:270%; background:#5a616b; border:3px solid var(--ink)}
+.sc .p-box{width:26%; height:19%; bottom:3%; left:5%; background:#c68a4e; border:3px solid var(--ink)}
+.sc .p-box:after{content:"↑"; position:absolute; inset:0; display:grid; place-items:center; font-size:15px; color:#6a4318}
+.sc .p-tub{width:32%; height:17%; bottom:3%; left:4%; background:var(--fur); border:3px solid var(--ink); border-radius:5px 5px 16px 16px}
+.sc .p-tub:after{content:""; position:absolute; inset:24% 8% 28%; background:#5ec5e6; border:2px solid var(--ink)}
+.sc .p-cans{width:17%; aspect-ratio:1/1; bottom:5%; left:6%; border:5px solid #2a2a2f; border-radius:50%; border-bottom-color:transparent}
+.sc .p-cans:after{content:""; position:absolute; left:-22%; right:-22%; bottom:-10%; height:34%; background:#2a2a2f; border:3px solid var(--ink); border-radius:4px}
+.sc .p-pizza{width:26%; height:10%; bottom:3%; left:5%; background:#e5322c; border:3px solid var(--ink)}
+.sc .p-sign:before{content:"BUS"; position:absolute; inset:0; display:grid; place-items:center; color:var(--fur); font:700 8px/1 "Martian Mono",monospace; z-index:1}
+.sc .p-pizza:after{content:"PIZZA"; position:absolute; inset:0; display:grid; place-items:center; color:var(--fur); font:700 8px/1 "Martian Mono",monospace}
+.sc .p-sign{width:16%; height:12%; bottom:40%; left:6%; background:#2f6fb5; border:3px solid var(--ink); border-radius:4px}
+.sc .p-sign:after{content:""; position:absolute; left:42%; top:94%; width:14%; height:330%; background:#8b8f96; border:3px solid var(--ink)}
+.sc .p-moon{width:9%; aspect-ratio:1/1; top:9%; right:8%; left:auto; bottom:auto; background:var(--sun); border:3px solid var(--ink); border-radius:50%}
+.gcat{position:absolute; width:16%; left:0; top:0; will-change:transform}
+.boxc{position:absolute; bottom:5%; width:23%; height:15%; background:#c68a4e; border:4px solid var(--ink);
+  box-shadow:inset 0 7px 0 rgba(255,255,255,.28), 0 4px 0 rgba(0,0,0,.4); display:grid; place-items:center;
+  font:700 7px/1 "Martian Mono",monospace; color:#6a4318; letter-spacing:.04em; will-change:transform}
+.hud{position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; gap:6px;
+  padding:8px 10px; font:700 10px/1 "Martian Mono",monospace; letter-spacing:.08em; color:var(--fur);
+  background:linear-gradient(rgba(27,26,23,.82),rgba(27,26,23,0))}
+.hud b{color:var(--sun)}
+.gover{position:absolute; inset:0; display:grid; place-items:center; background:rgba(27,26,23,.86); text-align:center; padding:20px}
+.gover.hid{display:none}
+.gover .disp{font-size:clamp(20px,3.4vw,38px); color:var(--sun); margin-bottom:10px}
+.gover p{max-width:34ch; font-size:12px; margin:0 auto 16px}
+.gbtn{font:400 14px/1 "Titan One",sans-serif; background:var(--sun); color:var(--ink); border:3px solid var(--ink);
+  padding:13px 20px; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,.5)}
+.gbtn:hover{box-shadow:0 5px 0 var(--leaf),0 0 0 3px var(--leaf)}
+.side{background:#2c3457; border:4px solid var(--ink); padding:16px}
+.side h3{font-size:18px; color:var(--sun)}
+.meters{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0 14px}
+.meters div{background:var(--night); border:3px solid var(--ink); padding:8px; text-align:center}
+.meters small{display:block; font-size:8px; letter-spacing:.1em; opacity:.7}
+.meters b{font:400 20px/1.1 "Titan One",sans-serif; color:var(--sun)}
+.feed{height:186px; overflow:auto; background:var(--night); border:3px solid var(--ink); padding:10px; font-size:11px}
+.feed p{margin:0 0 6px; opacity:.9}
+.feed p:before{content:"› "; color:var(--sun)}
+.hint{font-size:10px; opacity:.62; margin-top:10px; letter-spacing:.04em}
+
+/* ---------- карточки ситуаций ---------- */
+#cards{background:var(--cream)}
+.grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:26px}
+.card{display:block; width:100%; min-width:0; background:var(--fur); border:4px solid var(--ink); box-shadow:0 6px 0 var(--ink);
+  padding:0; text-align:left; font:inherit; color:inherit; cursor:pointer; overflow:hidden}
+.card .sc{position:relative; inset:auto; aspect-ratio:4/3; width:100%; border-bottom:4px solid var(--ink)}
+.card .tx{padding:11px 12px 14px}
+.card .tx b{display:block; font:400 15px/1.1 "Titan One",sans-serif}
+.card .tx small{display:block; font-size:10px; opacity:.62; margin-top:5px; letter-spacing:.05em}
+.card.lock{cursor:not-allowed}
+.card.lock .sc{filter:grayscale(1) brightness(.45) blur(2px)}
+.card:not(.lock):hover{box-shadow:0 10px 0 var(--ink)}
+.cardwrap{position:relative; min-width:0}
+.cardwrap .seal{position:absolute; top:36%; left:50%; transform:translate(-50%,-50%) rotate(-7deg); z-index:2;
+  background:var(--ink); color:var(--sun); font:700 10px/1 "Martian Mono",monospace; letter-spacing:.12em;
+  padding:8px 10px; border:3px solid var(--sun); pointer-events:none}
+.cardwrap.open .seal{display:none}
+
+/* ---------- заметки ---------- */
+#notes{background:var(--leaf); color:var(--fur)}
+#notes h2{color:var(--cream)}
+.notes{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px}
+.note{min-width:0; background:#2f7c39; border:4px solid var(--ink); box-shadow:0 6px 0 var(--ink); padding:14px}
+.note .crop{aspect-ratio:4/3; background:var(--cream); border:3px solid var(--ink); margin-bottom:12px; overflow:hidden}
+.note .crop svg{width:100%; height:100%}
+.note b{display:block; font:400 17px/1 "Titan One",sans-serif; color:var(--sun)}
+.note p{margin:8px 0 0; font-size:12px}
+
+/* ---------- спека ---------- */
+#spec{background:var(--grape); color:var(--fur)}
+#spec h2{color:var(--sun)}
+.specs{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:26px}
+.spec{min-width:0; background:#5f34a0; border:4px solid var(--ink); box-shadow:0 6px 0 var(--ink); padding:16px}
+.spec b{display:block; font:400 16px/1 "Titan One",sans-serif; color:var(--sun); letter-spacing:.06em}
+.spec p{margin:9px 0 0; font-size:12px}
+.chart{margin-top:18px; background:#4a2a80; border:4px solid var(--ink); padding:16px; display:flex;
+  flex-wrap:wrap; gap:14px 26px; align-items:center; justify-content:space-between}
+.chart .q{font-size:11px; letter-spacing:.08em; opacity:.8}
+.chart .q b{display:block; font:400 21px/1.2 "Titan One",sans-serif; color:var(--sun); letter-spacing:0}
+
+/* ---------- футер ---------- */
+footer{background:var(--ink); color:var(--cream); padding:34px clamp(14px,4vw,46px) 44px; text-align:center}
+footer .mark2{font:400 clamp(30px,7vw,68px)/1 "Titan One",sans-serif; color:var(--sun)}
+footer p{max-width:40ch; margin:12px auto 0; font-size:12px; opacity:.75}
+.links{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:20px}
+
+/* ---------- лайтбокс ---------- */
+#lb{position:fixed; inset:0; z-index:150; background:rgba(27,26,23,.9); display:none; place-items:center; padding:20px}
+#lb.on{display:grid}
+#lb .frame{position:relative; width:min(760px,92vw)}
+#lb .sc{position:relative; inset:auto; aspect-ratio:16/10; border:4px solid var(--ink)}
+#lb .cap{background:var(--cream); border:4px solid var(--ink); border-top:0; padding:13px 15px}
+#lb .cap b{display:block; font:400 18px/1 "Titan One",sans-serif}
+#lb .cap p{margin:7px 0 0; font-size:12px}
+#lb button{position:absolute; top:50%; transform:translateY(-50%); background:var(--sun); border:3px solid var(--ink);
+  width:42px; height:52px; font-size:18px; cursor:pointer; color:var(--ink)}
+#lb .pv{left:-14px} #lb .nx{right:-14px}
+#lb .cl{top:-16px; right:-14px; transform:none; width:42px; height:42px}
+#rain{position:fixed; inset:0; pointer-events:none; z-index:140; overflow:hidden}
+
+@keyframes bob{to{transform:translateY(-11px) rotate(1.4deg)}}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+
+@media (max-width:1000px){
+  .hero-in{grid-template-columns:1fr}
+  .hero-in>div:last-child{order:-1}
+  .port .cat{max-height:270px; width:auto}
+  .gwrap{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .notes{grid-template-columns:1fr}
+  #lb .pv{left:2px} #lb .nx{right:2px} #lb .cl{right:2px; top:2px}
+}
+@media (max-width:560px){
+  body{font-size:14px}
+  .specs{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr}
+  .feed{height:140px}
+  .mark{-webkit-text-stroke-width:5px}
+  .poke{top:0; right:2px; font-size:10px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body class="locked">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+ <defs>
+  <linearGradient id="fur" x1=".1" y1="0" x2=".9" y2="1">
+    <stop offset="0" stop-color="#e89a4c"/><stop offset="1" stop-color="#c2742c"/>
+  </linearGradient>
+  <g id="glArt">
+   <polygon points="264,200 322,238 332,308 302,354 258,350 246,288" fill="#d9843a"/>
+   <polygon points="298,352 262,350 260,332 300,330" fill="#f2ece1"/>
+   <g fill="#231f1c"><rect x="266" y="338" width="11" height="15" rx="4"/><rect x="282" y="336" width="11" height="15" rx="4"/></g>
+   <polygon points="106,272 158,276 152,368 94,372" fill="#f7f2e9"/>
+   <polygon points="186,288 234,282 240,370 192,368" fill="#ece5d8"/>
+   <g fill="#231f1c">
+    <rect x="96" y="352" width="14" height="20" rx="4"/><rect x="116" y="350" width="14" height="21" rx="4"/>
+    <rect x="136" y="349" width="14" height="20" rx="4"/><rect x="194" y="350" width="13" height="19" rx="4"/>
+    <rect x="212" y="350" width="13" height="20" rx="4"/><rect x="228" y="350" width="12" height="19" rx="4"/>
+   </g>
+   <polygon points="82,44 162,126 240,24 288,120 298,196 276,262 236,300 168,312 104,296 64,254 48,180 58,116" fill="url(#fur)"/>
+   <polygon points="162,126 240,24 288,120 210,124" fill="#c2742c" opacity=".4"/>
+   <polygon points="298,196 276,262 236,300 252,206" fill="#a05c22" opacity=".4"/>
+   <polygon points="162,120 202,136 248,164 272,208 252,264 216,296 162,308 108,292 72,250 56,182 66,124 104,100 136,104" fill="#f7f2e9"/>
+   <polygon points="162,120 136,104 104,100 66,124 72,190 120,150" fill="#fffdf6" opacity=".65"/>
+   <polygon points="86,52 116,110 70,106" fill="#f7f2e9"/>
+   <polygon points="236,32 260,102 222,88" fill="#f7f2e9"/>
+   <circle cx="118" cy="196" r="44" fill="#e08b84"/><circle cx="216" cy="188" r="51" fill="#e08b84"/>
+   <circle cx="118" cy="196" r="37" fill="#dfe3a2"/><circle cx="216" cy="188" r="43" fill="#dfe3a2"/>
+   <ellipse cx="120" cy="196" rx="14" ry="28" fill="#0f6b43"/><ellipse cx="218" cy="188" rx="16" ry="32" fill="#0f6b43"/>
+   <ellipse cx="120" cy="196" rx="5" ry="20" fill="#062f20"/><ellipse cx="218" cy="188" rx="6" ry="23" fill="#062f20"/>
+   <ellipse cx="168" cy="268" rx="35" ry="18" fill="#e0918a"/>
+   <ellipse cx="168" cy="266" rx="28" ry="12" fill="#16120f"/>
+  </g>
+ </defs>
+</svg>
+
+<div id="gate" role="button" tabindex="0" aria-label="enter the site">
+  <div>
+    <svg class="gcat" viewBox="0 0 360 380"><use href="#glArt"/></svg>
+    <b>CLICK TO ENTER</b>
+    <small>he is already inside. he does not know how he got there</small>
+  </div>
+</div>
+
+<div class="film scan"></div><div class="film grain"></div><div class="film vig"></div>
+<div id="rain" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="mq"><span>NOBODY KNOWS WHERE HE CAME FROM /// NO JOB /// NO SKILLS /// NO THOUGHTS /// TODAY HE IS TRADING /// TOMORROW HE IS IN A BOX /// SAME CAT DIFFERENT DAY /// DO NOT ASK HIM WHAT IS GOING ON /// HE IS THE LAST ONE TO FIND OUT ///</span></div>
+  <div class="snd">
+    <button id="sfxBtn" aria-pressed="true" aria-label="sound effects">SOUND</button>
+    <button id="musBtn" aria-pressed="false" aria-label="background music">MUSIC</button>
+  </div>
+</header>
+
+<section class="hero">
+ <div class="wrap hero-in">
+  <div>
+    <div class="kick">ONE CAT · MANY SITUATIONS · NO EXPLANATION</div>
+    <h1 class="mark">GLOOBERT</h1>
+    <div class="tick">$GLOOB</div>
+    <p class="slog">i keep ending up places. nobody tells me why.</p>
+    <p class="lore">nobody knows where i came from. i was not here, and then i was here, and everybody decided that was fine. i have no job, no skills and no thoughts, which is three fewer things to lose.</p>
+    <p class="lore">somehow i keep ending up in situations. today it is trading. yesterday it was a cardboard box with an arrow on it. next week it might be the moon. do not ask me what is going on, i find out the same time you do.</p>
+    <div class="cta">
+      <a class="btn soon" id="buyBtn" href="#">BUY $GLOOB</a>
+      <a class="btn alt xLink" id="xBtn" href="https://x.com/" target="_blank" rel="noopener">X / TWITTER</a>
+      <a class="btn alt" id="dexBtn" href="#spec">CHART</a>
+    </div>
+    <div class="ca" id="caBox" title="contract address"><span>CA</span> <b class="ca-val">soon</b></div>
+  </div>
+  <div class="port">
+    <div class="plate"></div>
+    <svg class="cat" id="hcat" viewBox="0 0 360 380" role="img" aria-label="gloobert, standing there, eyes fully open, waiting to find out where he is"><use href="#glArt"/></svg>
+    <div class="poke">poke him · he pays</div>
+    <div id="drop"></div>
+    <a class="btn go" href="#game" style="margin-top:14px">PLAY: THE SHUFFLE →</a>
+  </div>
+ </div>
+</section>
+
+<section id="game">
+ <div class="wrap">
+  <div class="kick">MINI GAME · 8 SITUATIONS TO FILE</div>
+  <h2>THE SHUFFLE</h2>
+  <p class="lede">reality keeps dropping him somewhere and reality is not sorry about it. you get one cardboard box. catch him eight times and he is officially accounted for, which has never happened before.</p>
+  <div class="gwrap">
+    <div class="stage" id="stage">
+      <div class="sc" id="stagebg"></div>
+      <svg class="gcat" id="gcat" viewBox="0 0 360 380" aria-hidden="true"><use href="#glArt"/></svg>
+      <div class="boxc" id="boxc">THIS SIDE UP</div>
+      <div class="hud">
+        <span>CAUGHT <b id="mCaught">0</b>/8</span>
+        <span id="mSit">GET READY</span>
+        <span>MISSED <b id="mMiss">0</b></span>
+      </div>
+      <div class="gover" id="gover">
+        <div>
+          <div class="disp" id="goverT">CATCH THE CAT</div>
+          <p id="goverP">drag the box, or use the arrow keys. he falls, he drifts, he does not steer. eight catches and the filing is done.</p>
+          <button class="gbtn" id="goBtn">START</button>
+        </div>
+      </div>
+    </div>
+    <div class="side">
+      <h3>FILING DESK</h3>
+      <div class="meters">
+        <div><small>CAUGHT</small><b id="m2Caught">0</b></div>
+        <div><small>MISSED</small><b id="m2Miss">0</b></div>
+        <div><small>STREAK</small><b id="m2Streak">0</b></div>
+      </div>
+      <div class="feed" id="feed"><p>desk is open. no cat filed yet.</p></div>
+      <div class="hint">drag inside the frame · ← → keys · every catch opens one situation below</div>
+    </div>
+  </div>
+ </div>
+</section>
+
+<section id="cards">
+ <div class="wrap">
+  <div class="kick">THE SITUATIONS · FILED ONE BY ONE</div>
+  <h2>WHERE HE HAS BEEN</h2>
+  <p class="lede">eight places he has turned up in so far. he did not travel to any of them. he was simply there and then it was a normal part of his day.</p>
+  <div class="grid" id="grid"></div>
+ </div>
+</section>
+
+<section id="notes">
+ <div class="wrap">
+  <div class="kick">FIELD NOTES · LOOKED AT UP CLOSE</div>
+  <h2>THE CAT ITSELF</h2>
+  <div class="notes">
+    <div class="note">
+      <div class="crop"><svg viewBox="60 128 240 180" role="img" aria-label="his face up close, both eyes fully open, mouth slightly ajar as if a sentence stopped halfway"><use href="#glArt"/></svg></div>
+      <b>THE FACE</b>
+      <p>my eyes are like this all the time. people keep asking what i just saw. i saw the same room you are in.</p>
+    </div>
+    <div class="note">
+      <div class="crop"><svg viewBox="60 8 240 180" role="img" aria-label="the top of his head, two triangular ears with white insides, orange fur across the crown"><use href="#glArt"/></svg></div>
+      <b>THE EARS</b>
+      <p>both ears work. i hear everything that happens near me and then i do nothing about any of it. that is the arrangement.</p>
+    </div>
+    <div class="note">
+      <div class="crop"><svg viewBox="72 200 240 180" role="img" aria-label="his front paws with black toe beans, planted on the floor of wherever he is today"><use href="#glArt"/></svg></div>
+      <b>THE FEET</b>
+      <p>four of these. they have taken me to a bathtub, a bus stop and a roof. i was not consulted on any of it.</p>
+    </div>
+  </div>
+ </div>
+</section>
+
+<section id="spec">
+ <div class="wrap">
+  <div class="kick">THE NUMBERS · HE HAS BEEN TOLD ABOUT THEM</div>
+  <h2>THE PAPERWORK</h2>
+  <div class="specs">
+    <div class="spec"><b>SUPPLY</b><p>one billion of me. that is more of me than anybody asked for and it is not going any higher. somebody counted once and then left.</p></div>
+    <div class="spec"><b>LIQUIDITY</b><p>locked, and i cannot open it. i have tried with both paws and with my whole face. it stays where it is.</p></div>
+    <div class="spec"><b>TAX</b><p>zero percent. i would not know how to collect it. i have no job, no skills and no system for keeping things.</p></div>
+    <div class="spec"><b>OWNERSHIP</b><p>burned. nobody is holding the keys, least of all me. i lose everything i am handed within the hour.</p></div>
+  </div>
+  <div class="chart" id="chartBox">
+    <div class="q"><span>PRICE</span><b id="qPrice">—</b></div>
+    <div class="q"><span>24H</span><b id="qCh">—</b></div>
+    <div class="q"><span>LIQUIDITY</span><b id="qLiq">—</b></div>
+    <div class="q"><span>MARKET CAP</span><b id="qMc">—</b></div>
+    <div class="q" id="qNote" style="flex:1 1 200px">CHART GOES LIVE ON LAUNCH</div>
+  </div>
+ </div>
+</section>
+
+<footer>
+  <div class="mark2">GLOOBERT</div>
+  <p>he is somewhere right now. he did not pick it and he is not moving.</p>
+  <div class="links">
+    <a class="btn soon" href="#" id="buyBtn2">BUY $GLOOB</a>
+    <a class="btn alt xLink" href="https://x.com/" target="_blank" rel="noopener">X</a>
+    <a class="btn alt" href="#spec">CHART</a>
+  </div>
+</footer>
+
+<div id="lb" role="dialog" aria-modal="true" aria-label="situation">
+  <div class="frame">
+    <div class="sc" id="lbSc"></div>
+    <div class="cap"><b id="lbT"></b><p id="lbP"></p></div>
+    <button class="pv" id="lbPv" aria-label="previous situation">‹</button>
+    <button class="nx" id="lbNx" aria-label="next situation">›</button>
+    <button class="cl" id="lbCl" aria-label="close">✕</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- звук: всё синтезом, ни одного аудиофайла ---------- */
+var AC=null, sfxOn=true, VOL=1;
+function ac(){
+  if(AC) return AC;
+  var C=window.AudioContext||window.webkitAudioContext; if(!C) return null;
+  try{ AC=new C(); }catch(e){ return null; }
+  return AC;
+}
+function tone(f1,f2,dur,type,g){
+  if(!sfxOn) return; var c=ac(); if(!c) return;
+  var o=c.createOscillator(), gg=c.createGain(), t=c.currentTime;
+  o.type=type||"sine"; o.frequency.setValueAtTime(f1,t);
+  if(f2&&f2!==f1) o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  gg.gain.setValueAtTime(.0001,t);
+  gg.gain.exponentialRampToValueAtTime((g||.06)*VOL,t+.012);
+  gg.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(gg); gg.connect(c.destination); o.start(t); o.stop(t+dur+.05);
+}
+/* ленивый лаунж-мьюзак на 5/4: он ни о чём не думает, и музыка тоже */
+var MEL=[523.25,0,392.00,440.00,0, 349.23,392.00,0,329.63,293.66];
+var BAS=[130.81,0,0,98.00,0, 116.54,0,0,98.00,0];
+var STEP=.27, MU={on:false,t:null,step:0,next:0};
+function mnote(f,at,dur,type,g,cut){
+  if(!f) return; var c=ac(); if(!c) return;
+  var o=c.createOscillator(), fl=c.createBiquadFilter(), gg=c.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,at);
+  fl.type="lowpass"; fl.frequency.setValueAtTime(cut,at);
+  gg.gain.setValueAtTime(.0001,at);
+  gg.gain.exponentialRampToValueAtTime(g*VOL,at+.03);
+  gg.gain.exponentialRampToValueAtTime(.0001,at+dur);
+  o.connect(fl); fl.connect(gg); gg.connect(c.destination); o.start(at); o.stop(at+dur+.05);
+}
+function musSchedule(){
+  var c=ac(); if(!c) return;
+  while(MU.next < c.currentTime+.5){
+    var i=MU.step%10, at=Math.max(MU.next,c.currentTime+.02);
+    mnote(MEL[i],at,.52,"triangle",.05,2400);
+    if(MEL[i]) mnote(MEL[i]*2.006,at,.30,"sine",.018,3000);
+    mnote(BAS[i],at,.46,"sine",.075,600);
+    MU.next+=STEP; MU.step++;
+  }
+}
+function musOn(v){
+  MU.on=v; musBtn.setAttribute("aria-pressed",v?"true":"false");
+  if(v){ var c=ac(); if(!c) return; if(c.state==="suspended") c.resume();
+    MU.next=c.currentTime+.1; if(!MU.t) MU.t=setInterval(musSchedule,100); }
+  else if(MU.t){ clearInterval(MU.t); MU.t=null; }
+}
+var sfxBtn=document.getElementById("sfxBtn"), musBtn=document.getElementById("musBtn");
+sfxBtn.addEventListener("click",function(){ sfxOn=!sfxOn; this.setAttribute("aria-pressed",sfxOn?"true":"false"); if(sfxOn) tone(660,880,.12,"square",.05); });
+musBtn.addEventListener("click",function(){ musOn(!MU.on); });
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden&&MU.on&&MU.t){ clearInterval(MU.t); MU.t=null; }
+  else if(!document.hidden&&MU.on&&!MU.t){ var c=ac(); if(c){ MU.next=c.currentTime+.1; MU.t=setInterval(musSchedule,100); } }
+});
+
+/* ---------- гейт ---------- */
+var gate=document.getElementById("gate"), entered=false;
+function enter(){
+  if(entered) return; entered=true;
+  gate.classList.add("off"); document.body.classList.remove("locked");
+  setTimeout(function(){ gate.style.display="none"; },800);
+  tone(320,760,.22,"triangle",.07); musOn(true);
+}
+gate.addEventListener("click",enter);
+gate.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" ") enter(); });
+setTimeout(enter,25000);
+
+/* ---------- монеты ---------- */
+function coinAt(host,x,y,spread){
+  var d=document.createElement("div"); d.className="coin";
+  d.style.left=(x-13)+"px"; d.style.top=(y-13)+"px"; host.appendChild(d);
+  var vx=(Math.random()-.5)*(spread||7), vy=-4-Math.random()*5, n=0,
+      rot=(Math.random()-.5)*22, px=0, py=0, H=host.clientHeight||400;
+  (function stp(){
+    n++; vy+=.42; px+=vx; py+=vy;
+    d.style.transform="translate("+px+"px,"+py+"px) rotate("+(n*rot)+"deg)";
+    if(n>130||py>H+340){ d.remove(); return; }
+    if(n>108) d.style.opacity=String(1-(n-108)/22);
+    requestAnimationFrame(stp);
+  })();
+}
+var dropHost=document.getElementById("drop"), hcat=document.getElementById("hcat");
+hcat.addEventListener("click",function(e){
+  var r=dropHost.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  for(var i=0;i<7;i++) coinAt(dropHost,x,y,9);
+  tone(880,1320,.14,"square",.05); setTimeout(function(){ tone(1320,1760,.12,"square",.04); },70);
+});
+var rain=document.getElementById("rain");
+function rainCoins(n){
+  var W=innerWidth, k=0;
+  var iv=setInterval(function(){
+    for(var i=0;i<3;i++) coinAt(rain,Math.random()*W,-30,3);
+    if(++k>n) clearInterval(iv);
+  },90);
+}
+
+/* ---------- ситуации ---------- */
+var SIT=[
+ {n:"THE BOWL",   bg:"#f2b632", fl:"#a9762a", po:"GOOD FOOD<br>GOOD MOOD",     pr:"bowl",
+  t:"there is a bowl down there with my name on it. i did not fill it and i am not going to be the one who mentions that. i stand next to it because standing next to it is the job i gave myself."},
+ {n:"THE JOB",    bg:"#3f9b4a", fl:"#2b6f36", po:"SMALL CAT<br>BIG PLANS",     pr:"laptop",
+  t:"i opened the laptop at nine and it has been open since. nobody has asked me for anything and i have not offered. the mug says work, so between the two of us something is getting done."},
+ {n:"THE BOX",    bg:"#c59a62", fl:"#8a6234", po:"THIS SIDE UP",               pr:"box",
+  t:"the box arrived with an arrow on it. i got in from the top, so the arrow is technically still correct. this is the closest i have ever come to being right about something."},
+ {n:"THE BATH",   bg:"#35b0c8", fl:"#1f7f94", po:"CLEAN CAT<br>HAPPY CAT",     pr:"tub",
+  t:"there is a duck in here with me and neither of us filled the tub. we have looked at each other about it and agreed to leave it alone. the mat says happy so i assume that part is handled."},
+ {n:"THE VOLUME", bg:"#7a49c8", fl:"#4f2b8c", po:"CATS LISTEN<br>TO EVERYTHING", pr:"cans",
+  t:"the headphones were already playing when i put them on. it is the same eleven seconds over and over and it has been that way for a while now. i have decided this is music and i am not checking again."},
+ {n:"THE PIZZA",  bg:"#e07a52", fl:"#b1522f", po:"EAT SLEEP<br>REPEAT",        pr:"pizza",
+  t:"a slice was in my mouth before i had made any decision about it. the box says pizza, so the box is doing its job and i am doing mine. we are both professionals here."},
+ {n:"THE STOP",   bg:"#6fa8d8", fl:"#7c7f86", po:"BETTER DAYS<br>AHEAD",       pr:"sign",
+  t:"the timetable says a bus comes. i have read it four hundred times and it says the same thing every time. i keep reading it in case it changes its mind before i do."},
+ {n:"THE ROOF",   bg:"#232a4a", fl:"#151a30", po:"SAME CAT<br>DIFFERENT DAY",  pr:"moon",
+  t:"i got to the roof. i do not remember the stairs and i am not going to pretend i do. the city is down there doing whatever it does and i am up here being a cat about it."}
+];
+function sceneHTML(s,withCat){
+  return '<div class="fl" style="background:'+s.fl+'"></div>'+
+         '<div class="po'+(s.pr==="sign"?" r":"")+'">'+s.po+'</div>'+
+         '<div class="pr p-'+s.pr+'"></div>'+
+         (withCat?'<svg class="sit" viewBox="0 0 360 380" aria-hidden="true"><use href="#glArt"/></svg>':"");
+}
+
+/* ---------- карточки + лайтбокс ---------- */
+var grid=document.getElementById("grid"), open=[], lb=document.getElementById("lb"), lbAt=0;
+SIT.forEach(function(s,i){
+  var w=document.createElement("div"); w.className="cardwrap";
+  var b=document.createElement("button"); b.className="card lock"; b.type="button";
+  b.setAttribute("aria-label","situation "+(i+1)+", locked");
+  b.innerHTML='<div class="sc" style="background:'+s.bg+'">'+sceneHTML(s,true)+'</div>'+
+              '<div class="tx"><b>'+(i+1<10?"0":"")+(i+1)+' · ???</b><small>not filed yet</small></div>';
+  b.addEventListener("click",function(){ if(open.indexOf(i)>-1) show(i); else tone(220,150,.16,"sawtooth",.04); });
+  var seal=document.createElement("div"); seal.className="seal"; seal.textContent="UNFILED";
+  w.appendChild(b); w.appendChild(seal); grid.appendChild(w);
+});
+function unlock(i){
+  if(open.indexOf(i)>-1) return; open.push(i);
+  var w=grid.children[i], b=w.firstChild, s=SIT[i];
+  w.classList.add("open"); b.classList.remove("lock");
+  b.setAttribute("aria-label","situation "+(i+1)+", "+s.n);
+  b.querySelector(".tx").innerHTML='<b>'+(i+1<10?"0":"")+(i+1)+' · '+s.n+'</b><small>filed · tap to read</small>';
+}
+function show(i){
+  lbAt=(i+SIT.length)%SIT.length;
+  if(open.indexOf(lbAt)<0){ var d=1; while(open.indexOf(lbAt)<0&&d++<20) lbAt=(lbAt+1)%SIT.length; }
+  var s=SIT[lbAt];
+  document.getElementById("lbSc").style.background=s.bg;
+  document.getElementById("lbSc").innerHTML=sceneHTML(s,true);
+  document.getElementById("lbT").textContent=s.n;
+  document.getElementById("lbP").textContent=s.t;
+  lb.classList.add("on");
+}
+document.getElementById("lbCl").addEventListener("click",function(){ lb.classList.remove("on"); });
+document.getElementById("lbPv").addEventListener("click",function(){ show(lbAt-1); });
+document.getElementById("lbNx").addEventListener("click",function(){ show(lbAt+1); });
+lb.addEventListener("click",function(e){ if(e.target===lb) lb.classList.remove("on"); });
+document.addEventListener("keydown",function(e){
+  if(!lb.classList.contains("on")) return;
+  if(e.key==="Escape") lb.classList.remove("on");
+  if(e.key==="ArrowLeft") show(lbAt-1);
+  if(e.key==="ArrowRight") show(lbAt+1);
+});
+
+/* ---------- мини-игра: THE SHUFFLE ---------- */
+var stage=document.getElementById("stage"), bg=document.getElementById("stagebg"),
+    gcat=document.getElementById("gcat"), boxc=document.getElementById("boxc"),
+    gover=document.getElementById("gover"), feed=document.getElementById("feed");
+var G={run:false,caught:0,miss:0,streak:0,round:0,x:.5,y:-.3,t:0,amp:.1,fr:1.2,x0:.5,bx:.5,done:false,live:false};
+var CATCH_Y=.78, CAT_W=.16, BOX_W=.23;
+function say(t){
+  var p=document.createElement("p"); p.textContent=t; feed.appendChild(p);
+  while(feed.children.length>26) feed.removeChild(feed.firstChild);
+  feed.scrollTop=feed.scrollHeight;
+}
+function meters(){
+  document.getElementById("mCaught").textContent=G.caught;
+  document.getElementById("mMiss").textContent=G.miss;
+  document.getElementById("m2Caught").textContent=G.caught;
+  document.getElementById("m2Miss").textContent=G.miss;
+  document.getElementById("m2Streak").textContent=G.streak;
+}
+function place(){
+  var W=stage.clientWidth, H=stage.clientHeight;
+  gcat.style.width=(CAT_W*100)+"%";
+  gcat.style.transform="translate("+(G.x*W)+"px,"+(G.y*H)+"px) rotate("+(Math.sin(G.t*2.4)*9)+"deg)";
+}
+function boxPos(){
+  var W=stage.clientWidth;
+  boxc.style.left=Math.max(0,Math.min(W-boxc.offsetWidth,(G.bx*W)-boxc.offsetWidth/2))+"px";
+}
+function nextRound(){
+  if(G.caught>=8){ win(); return; }
+  G.round++;
+  var s=SIT[Math.min(G.caught,7)];
+  bg.style.background=s.bg; bg.innerHTML=sceneHTML(s,false);
+  document.getElementById("mSit").textContent=s.n;
+  G.x0=.14+Math.random()*.66; G.x=G.x0; G.y=-.32; G.t=0; G.live=true;
+  G.amp=.06+Math.min(.16,G.round*.016); G.fr=.9+Math.random()*.9;
+  G.vy=.30+Math.min(.34,G.round*.035);
+}
+function land(hit){
+  G.live=false;
+  var s=SIT[Math.min(G.caught,7)];
+  if(hit){
+    G.caught++; G.streak++;
+    unlock(SIT.indexOf(s));
+    tone(560,1120,.16,"square",.06); setTimeout(function(){ tone(1120,1500,.12,"square",.05); },90);
+    var r=stage.getBoundingClientRect();
+    for(var i=0;i<8;i++) coinAt(stage,(G.bx*r.width),r.height*.8,10);
+    say("filed him in "+s.n+". he did not resist and he did not help.");
+  }else{
+    G.miss++; G.streak=0;
+    tone(240,90,.26,"sawtooth",.05);
+    say("missed. he is in "+s.n+" now and he says he lives there.");
+  }
+  meters();
+  setTimeout(function(){ if(G.run) nextRound(); },760);
+}
+function win(){
+  G.run=false; G.done=true;
+  document.getElementById("goverT").textContent="8 / 8 FILED";
+  document.getElementById("goverP").textContent="he is accounted for. every situation has a box around it and the box has an arrow on it. this has never happened before and it will not last.";
+  document.getElementById("goBtn").textContent="DO IT AGAIN";
+  gover.classList.remove("hid");
+  rainCoins(9);
+  tone(523,784,.2,"square",.06);
+  setTimeout(function(){ tone(659,988,.2,"square",.06); },170);
+  setTimeout(function(){ tone(784,1318,.42,"square",.06); },340);
+  say("desk closed. 8 of 8. nobody at the office believes it.");
+}
+var last=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  var dt=Math.min(.05,(ts-last)/1000||0); last=ts;
+  if(!G.run||!G.live){ place(); return; }
+  G.t+=dt; G.y+=G.vy*dt;
+  G.x=Math.max(.01,Math.min(1-CAT_W-.01, G.x0+Math.sin(G.t*G.fr*2)*G.amp));
+  if(G.y+ .27 >= CATCH_Y){
+    var cc=G.x+CAT_W/2, tol=BOX_W/2+CAT_W*.28;
+    land(Math.abs(cc-G.bx)<tol);
+  }
+  place();
+}
+requestAnimationFrame(loop);
+function setBx(cx){
+  var r=stage.getBoundingClientRect();
+  G.bx=Math.max(BOX_W/2,Math.min(1-BOX_W/2,(cx-r.left)/r.width));
+  boxPos();
+}
+stage.addEventListener("pointerdown",function(e){ setBx(e.clientX); });
+stage.addEventListener("pointermove",function(e){ if(e.buttons||e.pointerType==="touch") setBx(e.clientX); else if(G.run) setBx(e.clientX); });
+document.addEventListener("keydown",function(e){
+  if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight") return;
+  if(!G.run) return;
+  var r=stage.getBoundingClientRect();
+  if(r.bottom<0||r.top>innerHeight) return;
+  e.preventDefault();
+  G.bx=Math.max(BOX_W/2,Math.min(1-BOX_W/2,G.bx+(e.key==="ArrowLeft"?-.055:.055)));
+  boxPos();
+});
+document.getElementById("goBtn").addEventListener("click",function(){
+  G.caught=0; G.miss=0; G.streak=0; G.round=0; G.done=false; G.run=true;
+  meters(); gover.classList.add("hid");
+  feed.innerHTML=""; say("desk is open. reality is already dropping him.");
+  boxPos(); nextRound();
+  var c=ac(); if(c&&c.state==="suspended") c.resume();
+});
+addEventListener("resize",function(){ boxPos(); });
+bg.style.background=SIT[0].bg; bg.innerHTML=sceneHTML(SIT[0],false); boxPos(); meters();
+
+/* ---------- SETTINGS: контракт, X, покупка ---------- */
+var CA=(window.CONTRACT||"").trim(), TW=(window.TWITTER||"").trim(), BUY=(window.BUY_URL||"").trim();
+if(!BUY && CA) BUY="https://www.ponsfamily.com/launchpad/"+CA;
+if(CA){
+  document.querySelectorAll(".ca-val").forEach(function(e){ e.textContent=CA.slice(0,6)+"…"+CA.slice(-4); });
+  var caBox=document.getElementById("caBox");
+  caBox.addEventListener("click",function(){
+    var b=this.querySelector("b"), old=b.textContent;
+    if(!navigator.clipboard) return;
+    navigator.clipboard.writeText(CA).then(function(){
+      b.textContent="copied"; setTimeout(function(){ b.textContent=old; },1200);
+    });
+  });
+}
+if(TW) document.querySelectorAll(".xLink").forEach(function(a){ a.href=TW; });
+document.querySelectorAll("#buyBtn,#buyBtn2").forEach(function(b){
+  if(BUY){ b.href=BUY; b.target="_blank"; b.rel="noopener"; b.classList.remove("soon"); }
+  else b.addEventListener("click",function(e){ e.preventDefault(); tone(200,140,.18,"sawtooth",.04); });
+});
+if(CA) document.querySelectorAll('a[href="#spec"]').forEach(function(a){
+  a.href="https://dexscreener.com/search?q="+CA; a.target="_blank"; a.rel="noopener";
+});
+
+/* ---------- живые данные, если контракт уже есть ---------- */
+if(CA){
+  fetch("https://api.dexscreener.com/latest/dex/tokens/"+CA).then(function(r){ return r.json(); }).then(function(d){
+    var p=d&&d.pairs&&d.pairs[0]; if(!p) return;
+    var f=function(n){ return n===undefined||n===null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:0}); };
+    document.getElementById("qPrice").textContent=p.priceUsd?("$"+p.priceUsd):"—";
+    document.getElementById("qCh").textContent=(p.priceChange&&p.priceChange.h24!==undefined)?(p.priceChange.h24+"%"):"—";
+    document.getElementById("qLiq").textContent=p.liquidity?("$"+f(p.liquidity.usd)):"—";
+    document.getElementById("qMc").textContent=p.fdv?("$"+f(p.fdv)):"—";
+    document.getElementById("qNote").textContent="LIVE FROM DEXSCREENER";
+  }).catch(function(){});
+}
+})();
+</script>
+</body>
+</html>
